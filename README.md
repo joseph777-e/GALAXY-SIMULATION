@@ -1,19 +1,25 @@
 # GRAVITY — N-Body Physics Playground
 
-An interactive browser simulation where you spawn planets, stars, comets, and black holes, then watch them orbit, collide, and explode under real-ish gravity.
+An interactive browser simulation where you spawn planets, stars, comets, black holes, and asteroids — then watch them orbit, collide, tear apart, and explode under real-ish gravity.
 
-No install needed — just open `index.html` in any modern browser.
+**Engine v3.1** — no install needed. Open `index.html` in any modern browser.
 
 ## What it does
 
 - **N-body gravity** — every body pulls on every other body
 - **Collisions** — bodies merge, stars trigger supernovae, black holes absorb matter
-- **Spawn & launch** — click and drag on the canvas to fling new bodies into the scene
+- **Star classes** — M through O spectral types with different colors and sizes
+- **Planet rings** — some planets spawn with Saturn-style rings
+- **Day/night** — planets show a lit side facing the nearest star
+- **Roche limit** — small bodies get torn apart near massive ones
+- **Nebula clouds** — colorful remnants after supernovae
+- **Gravitational lensing** — visual distortion around black holes
+- **Spawn & launch** — click and drag on the canvas to fling new bodies
 - **Auto-orbit mode** — click near a massive body to insert a stable orbit
-- **Presets** — solar system, binary stars, black hole system, and chaos mode
+- **Presets** — solar system (with asteroid belt), binary stars, black hole system, chaos mode
 - **Zoom & pan** — scroll to zoom, middle-mouse or right-drag to pan
 - **Live stats** — body count, supernova count, sim time, and zoom level
-- **Event log** — click events in the log for a short science explanation
+- **Event log** — click events for a short science explanation
 
 ## How to run
 
@@ -49,6 +55,15 @@ Then visit `http://localhost:8080`
 - **Physics** — gravity strength, damping, trail length
 - **View** — zoom slider, reset/center camera
 - **Presets** — Chaos, Solar System, Binary Stars, Black Hole, Clear All
+
+## Performance tips
+
+This sim is CPU-heavy with many bodies and effects. For smoother play:
+
+- Lower **Trail Length** to 0–20
+- Avoid spamming **Chaos Mode**
+- Use **Pause** when not watching
+- Hit **Clear All** after big explosions
 
 ## Files
 
