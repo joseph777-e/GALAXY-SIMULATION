@@ -4,6 +4,8 @@ An interactive browser simulation where you spawn planets, stars, comets, black 
 
 **Engine v3.1** — no install needed. Open `index.html` in any modern browser.
 
+**Live demo:** [https://joseph777-e.github.io/GALAXY-SIMULATION/](https://joseph777-e.github.io/GALAXY-SIMULATION/)
+
 ## What it does
 
 - **N-body gravity** — every body pulls on every other body
