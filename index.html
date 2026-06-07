@@ -1,0 +1,164 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRAVITY — Physics Playground</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<canvas id="sim"></canvas>
+<div id="flash"></div>
+
+<!-- INTRO SCREEN -->
+<div id="intro">
+<div class="intro-title">GRAVITY</div>
+<div class="intro-sub">N-Body Physics Playground</div>
+<button class="intro-btn" onclick="startSim()">Launch Simulation</button>
+</div>
+
+<!-- TOP BAR -->
+<div id="topbar">
+<div class="logo">
+<div class="logo-title">Gravity</div>
+<div class="logo-sub">Physics Engine v3.0</div>
+</div>
+<div id="stats">
+BODIES: <span id="s-bodies">0</span>  | 
+SUPERNOVAE: <span id="s-nova">0</span>  | 
+TIME: <span id="s-time">0.0</span>s  | 
+ZOOM: <span id="s-zoom">100</span>%
+</div>
+</div>
+
+<!-- SIDE PANEL -->
+<div id="panel">
+<div id="panel-toggle" onclick="togglePanel()" title="Toggle panel">
+<span id="panel-toggle-icon">◀</span>
+</div>
+<div id="panel-inner">
+
+<!-- Spawn Type -->
+<div class="panel-section">
+<div class="panel-label">Spawn Type</div>
+<div class="type-grid">
+<div class="type-btn active" onclick="setType('planet',this)">
+<span class="dot" style="background:radial-gradient(circle at 35% 35%,#6eb5ff,#1a4aaa)"></span>PLANET
+</div>
+<div class="type-btn" onclick="setType('star',this)">
+<span class="dot" style="background:radial-gradient(circle at 35% 35%,#fff7a0,#ffaa00)"></span>STAR
+</div>
+<div class="type-btn" onclick="setType('blackhole',this)">
+<span class="dot" style="background:radial-gradient(circle at 35% 35%,#444,#000);border:1px solid #666"></span>BLACK HOLE
+</div>
+<div class="type-btn" onclick="setType('comet',this)">
+<span class="dot" style="background:radial-gradient(circle at 35% 35%,#aaffee,#00aa88)"></span>COMET
+</div>
+</div>
+</div>
+
+<!-- Body Size -->
+<div class="panel-section">
+<div class="panel-label">Body Size</div>
+<div class="slider-group">
+<div class="slider-row">
+<span class="slider-name">Spawn Radius</span>
+<span class="slider-val" id="v-spawnRadius">12</span>
+</div>
+<input type="range" min="3" max="60" value="12" step="1" oninput="updateSlider('spawnRadius',this.value)">
+</div>
+<div class="slider-group">
+<div class="slider-row">
+<span class="slider-name">Spawn Mass</span>
+<span class="slider-val" id="v-spawnMass">auto</span>
+</div>
+<input type="range" min="1" max="1000" value="0" step="1" oninput="updateSlider('spawnMass',this.value)">
+<div class="slider-hint">0 = auto by type</div>
+</div>
+</div>
+
+<!-- Spawn Mode -->
+<div class="panel-section">
+<div class="panel-label">Spawn Mode</div>
+<div class="btn-group">
+<div class="btn active" id="mode-launch-btn" onclick="setSpawnMode('launch')">🚀 LAUNCH (drag)</div>
+<div class="btn" id="mode-orbit-btn" onclick="setSpawnMode('orbit')">🪐 AUTO-ORBIT</div>
+</div>
+</div>
+
+<!-- Physics -->
+<div class="panel-section">
+<div class="panel-label">Physics</div>
+<div class="slider-group">
+<div class="slider-row"><span class="slider-name">Gravity</span><span class="slider-val" id="v-gravity">1.0</span></div>
+<input type="range" min="0" max="30" value="10" step="1" oninput="updateSlider('gravity',this.value)">
+</div>
+<div class="slider-group">
+<div class="slider-row"><span class="slider-name">Damping</span><span class="slider-val" id="v-damping">0.999</span></div>
+<input type="range" min="980" max="1000" value="999" step="1" oninput="updateSlider('damping',this.value)">
+</div>
+<div class="slider-group">
+<div class="slider-row"><span class="slider-name">Trail Length</span><span class="slider-val" id="v-trail">80</span></div>
+<input type="range" min="0" max="300" value="80" step="10" oninput="updateSlider('trail',this.value)">
+</div>
+</div>
+
+<!-- Zoom -->
+<div class="panel-section">
+<div class="panel-label">View</div>
+<div class="slider-group">
+<div class="slider-row"><span class="slider-name">Zoom</span><span class="slider-val" id="v-zoom">100%</span></div>
+<input type="range" min="20" max="400" value="100" step="5" oninput="updateSlider('zoom',this.value)">
+</div>
+<div class="btn-group" style="margin-top:8px">
+<div class="btn" onclick="resetView()">🔍 RESET VIEW</div>
+<div class="btn" onclick="trackCenter()">🎯 CENTER VIEW</div>
+</div>
+</div>
+
+<!-- Presets -->
+<div class="panel-section">
+<div class="panel-label">Presets</div>
+<div class="btn-group">
+<div class="btn" onclick="togglePause()" id="pause-btn">⏸ PAUSE</div>
+<div class="btn" onclick="spawnChaos()">💥 CHAOS MODE</div>
+<div class="btn" onclick="spawnOrbit()">🌞 SOLAR SYSTEM</div>
+<div class="btn" onclick="spawnBinaryStars()">⭐ BINARY STARS</div>
+<div class="btn" onclick="spawnBlackHoleSystem()">🕳️ BLACK HOLE</div>
+<div class="btn danger" onclick="clearAll()">✕ CLEAR ALL</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- ZOOM CONTROLS (floating) -->
+<div id="zoom-controls">
+<button class="zoom-btn" onclick="changeZoom(1.2)" title="Zoom in">+</button>
+<button class="zoom-btn" onclick="changeZoom(1/1.2)" title="Zoom out">−</button>
+<button class="zoom-btn small" onclick="resetView()" title="Reset zoom">⊙</button>
+</div>
+
+<!-- EVENT LOG (bottom left) -->
+<div id="eventlog"></div>
+
+<!-- EVENT DETAIL PANEL (bottom center) -->
+<div id="event-detail" class="hidden">
+<div id="event-detail-close" onclick="closeDetail()">✕</div>
+<div id="event-detail-icon"></div>
+<div id="event-detail-title"></div>
+<div id="event-detail-body"></div>
+</div>
+
+<!-- HINTS -->
+<div id="hint">Click to spawn · Drag to launch · Scroll to zoom · Middle-drag to pan</div>
+<div id="orbit-hint">Click near a body to auto-orbit around it</div>
+
+<script src="script.js"></script>
+</body>
+</html>
