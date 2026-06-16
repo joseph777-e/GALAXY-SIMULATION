@@ -65,7 +65,7 @@ This sim is CPU-heavy with many bodies and effects. For smoother play:
 - Lower **Trail Length** to 0–20
 - Avoid spamming **Chaos Mode**
 - Use **Pause** when not watching
-- Hit **Clear All** after big explosions
+- Hit **Clear All** after big explosions or if there is alot of bodies 
 
 ## Files
 
@@ -77,8 +77,8 @@ This sim is CPU-heavy with many bodies and effects. For smoother play:
 
 ## Tech
 
-Plain **HTML + CSS + JavaScript** with the Canvas API. No frameworks or build step.
+Plain **HTML + CSS + JavaScript** used AI to build most structures for the java script phyics engine and the maths calculation for speed and gravity outcomes but i also had to debugg many things on my own.
 
 ## License
 
-Personal project — use and modify freely.
+Personal project — use and modify freely. But it would be bettter if u also supported ty... :)
