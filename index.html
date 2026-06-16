@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,21 +18,21 @@
 <div class="intro-title">GRAVITY</div>
 <div class="intro-sub">N-Body Physics Playground</div>
 <button class="intro-btn" onclick="startSim()">Launch Simulation</button>
-<div class = "intro-sub">Interstellar experience</div>
 </div>
 
 <!-- TOP BAR -->
 <div id="topbar">
 <div class="logo">
 <div class="logo-title">Gravity</div>
-<div class="logo-sub">Physics Engine v3.0</div>
+<div class="logo-sub">Physics Engine v3.2</div>
 </div>
 <div id="stats">
-BODIES: <span id="s-bodies">0</span>  | 
-SUPERNOVAE: <span id="s-nova">0</span>  | 
-TIME: <span id="s-time">0.0</span>s  | 
+BODIES: <span id="s-bodies">0</span> |
+SUPERNOVAE: <span id="s-nova">0</span> |
+TIME: <span id="s-time">0.0</span>s |
 ZOOM: <span id="s-zoom">100</span>%
 </div>
+<button class="enc-open-btn" onclick="openEncyclopedia()">📖 SPACE ENCYCLOPEDIA</button>
 </div>
 
 <!-- SIDE PANEL -->
@@ -60,6 +58,9 @@ ZOOM: <span id="s-zoom">100</span>%
 <div class="type-btn" onclick="setType('comet',this)">
 <span class="dot" style="background:radial-gradient(circle at 35% 35%,#aaffee,#00aa88)"></span>COMET
 </div>
+<div class="type-btn" onclick="setType('asteroid',this)">
+<span class="dot" style="background:radial-gradient(circle at 35% 35%,#998866,#554433)"></span>ASTEROID
+</div>
 </div>
 </div>
 
@@ -78,7 +79,7 @@ ZOOM: <span id="s-zoom">100</span>%
 <span class="slider-name">Spawn Mass</span>
 <span class="slider-val" id="v-spawnMass">auto</span>
 </div>
-<input type="range" min="1" max="1000" value="0" step="1" oninput="updateSlider('spawnMass',this.value)">
+<input type="range" min="0" max="1000" value="0" step="1" oninput="updateSlider('spawnMass',this.value)">
 <div class="slider-hint">0 = auto by type</div>
 </div>
 </div>
@@ -89,6 +90,7 @@ ZOOM: <span id="s-zoom">100</span>%
 <div class="btn-group">
 <div class="btn active" id="mode-launch-btn" onclick="setSpawnMode('launch')">🚀 LAUNCH (drag)</div>
 <div class="btn" id="mode-orbit-btn" onclick="setSpawnMode('orbit')">🪐 AUTO-ORBIT</div>
+<div class="btn" id="mode-gravity-btn" onclick="setSpawnMode('gravity')">🌐 GRAVITY WELL</div>
 </div>
 </div>
 
@@ -107,9 +109,23 @@ ZOOM: <span id="s-zoom">100</span>%
 <div class="slider-row"><span class="slider-name">Trail Length</span><span class="slider-val" id="v-trail">80</span></div>
 <input type="range" min="0" max="300" value="80" step="10" oninput="updateSlider('trail',this.value)">
 </div>
+<div class="slider-group">
+<div class="slider-row"><span class="slider-name">Time Warp</span><span class="slider-val" id="v-timewarp">1.0x</span></div>
+<input type="range" min="1" max="50" value="10" step="1" oninput="updateSlider('timewarp',this.value)">
+</div>
+<div class="slider-group">
+<div class="slider-row"><span class="slider-name">Body Limit</span><span class="slider-val" id="v-bodylimit">80</span></div>
+<input type="range" min="10" max="200" value="80" step="5" oninput="updateSlider('bodylimit',this.value)">
+<div class="slider-hint">not yet fully working.</div>
+</div>
+<div class="slider-group">
+<div class="slider-row"><span class="slider-name">Well Strength</span><span class="slider-val" id="v-wellstrength">500</span></div>
+<input type="range" min="50" max="2000" value="500" step="50" oninput="updateSlider('wellstrength',this.value)">
+<div class="slider-hint">Gravity well pull force</div>
+</div>
 </div>
 
-<!-- Zoom -->
+<!-- View -->
 <div class="panel-section">
 <div class="panel-label">View</div>
 <div class="slider-group">
@@ -119,6 +135,7 @@ ZOOM: <span id="s-zoom">100</span>%
 <div class="btn-group" style="margin-top:8px">
 <div class="btn" onclick="resetView()">🔍 RESET VIEW</div>
 <div class="btn" onclick="trackCenter()">🎯 CENTER VIEW</div>
+<div class="btn" id="follow-btn" onclick="toggleFollow()">📌 FOLLOW SELECTED</div>
 </div>
 </div>
 
@@ -127,10 +144,15 @@ ZOOM: <span id="s-zoom">100</span>%
 <div class="panel-label">Presets</div>
 <div class="btn-group">
 <div class="btn" onclick="togglePause()" id="pause-btn">⏸ PAUSE</div>
-<div class="btn" onclick="spawnChaos()">💥 CHAOS MODE</div>
 <div class="btn" onclick="spawnOrbit()">🌞 SOLAR SYSTEM</div>
 <div class="btn" onclick="spawnBinaryStars()">⭐ BINARY STARS</div>
 <div class="btn" onclick="spawnBlackHoleSystem()">🕳️ BLACK HOLE</div>
+<div class="btn" onclick="spawnFigureEight()">∞ FIGURE-8</div>
+<div class="btn" onclick="spawnGalaxyCollision()">🌌 GALAXY COLLISION</div>
+<div class="btn" onclick="spawnRogueFlyby()">☄️ ROGUE FLYBY</div>
+<div class="btn" onclick="spawnPulsar()">💫 PULSAR</div>
+<div class="btn" onclick="spawnAsteroidBelt()">🪨 ASTEROID BELT</div>
+<div class="btn" onclick="spawnChaos()">💥 CHAOS MODE</div>
 <div class="btn danger" onclick="clearAll()">✕ CLEAR ALL</div>
 </div>
 </div>
@@ -138,11 +160,32 @@ ZOOM: <span id="s-zoom">100</span>%
 </div>
 </div>
 
-<!-- ZOOM CONTROLS (floating) -->
+<!-- ZOOM CONTROLS (floating left) -->
 <div id="zoom-controls">
 <button class="zoom-btn" onclick="changeZoom(1.2)" title="Zoom in">+</button>
 <button class="zoom-btn" onclick="changeZoom(1/1.2)" title="Zoom out">−</button>
 <button class="zoom-btn small" onclick="resetView()" title="Reset zoom">⊙</button>
+</div>
+
+<!-- SELECTED BODY INSPECTOR -->
+<div id="inspector" class="hidden">
+<div id="inspector-header">
+<span id="inspector-icon"></span>
+<span id="inspector-title"></span>
+<span id="inspector-close" onclick="deselectBody()">✕</span>
+</div>
+<div id="inspector-body"></div>
+<div id="inspector-gravity" style="padding:8px 12px 0 12px">
+<div class="slider-row">
+<span class="slider-name" style="font-size:10px">Body Gravity</span>
+<span class="slider-val" id="v-bodygravity">1.0x</span>
+</div>
+<input type="range" min="0" max="40" value="10" step="1" id="slider-bodygravity" oninput="setBodyGravity(this.value)">
+</div>
+<div id="inspector-actions">
+<div class="insp-btn" onclick="toggleFollow()">📌 Follow</div>
+<div class="insp-btn danger-btn" onclick="deleteSelected()">🗑 Delete</div>
+</div>
 </div>
 
 <!-- EVENT LOG (bottom left) -->
@@ -157,8 +200,34 @@ ZOOM: <span id="s-zoom">100</span>%
 </div>
 
 <!-- HINTS -->
-<div id="hint">Click to spawn · Drag to launch · Scroll to zoom · Middle-drag to pan</div>
+<div id="hint">Click to spawn · Drag to launch · Scroll to zoom · Mid-drag to pan · Click body to select</div>
 <div id="orbit-hint">Click near a body to auto-orbit around it</div>
+<div id="gravity-hint">Hold & drag to pull bodies toward cursor</div>
+
+<!-- SPACE ENCYCLOPEDIA -->
+<div id="encyclopedia" class="hidden">
+<div id="enc-header">
+<div id="enc-header-left">
+<div id="enc-title">📖 Space Encyclopedia</div>
+<div id="enc-subtitle">Click an event to learn more — then simulate it live</div>
+</div>
+<button id="enc-close" onclick="closeEncyclopedia()">✕</button>
+</div>
+<div id="enc-content">
+<div id="enc-list"></div>
+<div id="enc-detail" class="hidden">
+<div id="enc-detail-icon"></div>
+<div id="enc-detail-title"></div>
+<div id="enc-detail-subtitle"></div>
+<div id="enc-detail-fact"></div>
+<div id="enc-detail-desc"></div>
+<div id="enc-detail-actions">
+<button id="enc-simulate-btn">▶ SIMULATE THIS</button>
+<button id="enc-link-btn">🔗 LEARN MORE</button>
+</div>
+</div>
+</div>
+</div>
 
 <script src="script.js"></script>
 </body>
