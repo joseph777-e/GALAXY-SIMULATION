@@ -18,6 +18,8 @@
 <div class="intro-title">GRAVITY</div>
 <div class="intro-sub">N-Body Physics Playground</div>
 <button class="intro-btn" onclick="startSim()">Launch Simulation</button>
+<div class="intro-sub">This simulation is simple and doesnt show everything accurately its made for teaching young people in an interactive way without being too heavy to run or too complicated to understand. It's also still being improved.</div>
+
 </div>
 
 <!-- TOP BAR -->
@@ -34,6 +36,7 @@ ZOOM: <span id="s-zoom">100</span>%
 </div>
 <button class="enc-open-btn" onclick="openEncyclopedia()">📖 SPACE ENCYCLOPEDIA</button>
 </div>
+
 
 <!-- SIDE PANEL -->
 <div id="panel">
@@ -113,11 +116,7 @@ ZOOM: <span id="s-zoom">100</span>%
 <div class="slider-row"><span class="slider-name">Time Warp</span><span class="slider-val" id="v-timewarp">1.0x</span></div>
 <input type="range" min="1" max="50" value="10" step="1" oninput="updateSlider('timewarp',this.value)">
 </div>
-<div class="slider-group">
-<div class="slider-row"><span class="slider-name">Body Limit</span><span class="slider-val" id="v-bodylimit">80</span></div>
-<input type="range" min="10" max="200" value="80" step="5" oninput="updateSlider('bodylimit',this.value)">
-<div class="slider-hint">not yet fully working.</div>
-</div>
+
 <div class="slider-group">
 <div class="slider-row"><span class="slider-name">Well Strength</span><span class="slider-val" id="v-wellstrength">500</span></div>
 <input type="range" min="50" max="2000" value="500" step="50" oninput="updateSlider('wellstrength',this.value)">
