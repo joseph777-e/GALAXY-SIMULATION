@@ -19,6 +19,7 @@ sCtx.fillStyle = 'rgba(255,255,255,' + a + ')';
 sCtx.fill();
 }
 }
+
 resizeStars();
 
 // ── Sim Canvas ────────────────────────────────────────────────────
