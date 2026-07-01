@@ -3,7 +3,7 @@
 // ── Stars Background ─────────────────────────────────────────────
 var starCanvas = document.getElementById('stars');
 var sCtx = starCanvas.getContext('2d');
-var bodyLimit = 80;
+
 function resizeStars() {
 starCanvas.width = window.innerWidth;
 starCanvas.height = window.innerHeight;
@@ -19,6 +19,7 @@ sCtx.fillStyle = 'rgba(255,255,255,' + a + ')';
 sCtx.fill();
 }
 }
+
 resizeStars();
 
 // ── Sim Canvas ────────────────────────────────────────────────────
@@ -503,11 +504,7 @@ smaller.x + (Math.random() - 0.5) * smaller.radius * 3,
 smaller.y + (Math.random() - 0.5) * smaller.radius * 3,
 smaller.vx + Math.cos(angle) * speed, smaller.vy + Math.sin(angle) * speed, 'asteroid'
 );
-debris.mass = smaller.mass / count; debris.radius = 1.5 + Math.random() * 1.5;
-bodies.push(debris);
-while (bodies.length > bodyLimit) {
-    bodies.remove();
-}
+
 }
 for (var j = 0; j < 20; j++) {
 var pa = Math.random() * Math.PI * 2, ps = 1 + Math.random() * 3;
@@ -1115,8 +1112,8 @@ else if (name === 'spawnRadius') { customRadius = parseInt(val); document.getEle
 else if (name === 'spawnMass') { customMass = parseInt(val); document.getElementById('v-spawnMass').textContent = customMass === 0 ? 'auto' : customMass; }
 else if (name === 'timewarp') { timeWarp = v; document.getElementById('v-timewarp').textContent = v.toFixed(1) + 'x'; }
 else if (name === 'wellstrength') { wellStrength = v; document.getElementById('v-wellstrength').textContent = Math.round(v); }
-else if (name === 'bodylimit') { bodyLimit = parseInt(value); document.getElementById('v-bodylimit').textContent = value;
-}
+
+
 }
 
 function togglePause() {
@@ -1485,3 +1482,31 @@ simBtn.onclick = function() {
     }
 };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
