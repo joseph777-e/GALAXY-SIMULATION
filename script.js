@@ -1,5 +1,5 @@
 // GRAVITY - Physics Engine v3.2 
-
+window.alert("This simulation is simple and doesn't show everything accurately it's made for teaching purposes in a playfull and interactive way without being too heavy to run or too complicated to understand. It's also still in development.");
 // ── Stars Background ─────────────────────────────────────────────
 var starCanvas = document.getElementById('stars');
 var sCtx = starCanvas.getContext('2d');
@@ -19,7 +19,6 @@ sCtx.fillStyle = 'rgba(255,255,255,' + a + ')';
 sCtx.fill();
 }
 }
-
 resizeStars();
 
 // ── Sim Canvas ────────────────────────────────────────────────────
@@ -134,12 +133,13 @@ var particles = [];
 var shockwaves = [];
 var nebulae = [];
 var gravityWells = [];
+var orbitGuides = [];
 var paused = false;
 var simTime = 0;
 var novaCount = 0;
 var frameCount = 0;
 var G = 1.0;
-var damping = 0.999;
+var damping = 1.0;
 var trailLen = 80;
 var spawnType = 'planet';
 var spawnMode = 'launch';
@@ -480,7 +480,11 @@ else if (b.mass > a.mass * 5) { bigger = b; smaller = a; }
 else return false;
 var dx = smaller.x - bigger.x, dy = smaller.y - bigger.y;
 var dist = Math.sqrt(dx * dx + dy * dy);
-var rocheLimit = bigger.radius * 2.44 * Math.pow(bigger.mass / smaller.mass, 1 / 3);
+// The Roche limit depends on density, not mass alone. Using only the mass ratio
+// made a relatively compact Sun appear to disrupt planets hundreds of units away.
+var biggerDensity = bigger.rocheDensity || (bigger.mass / Math.pow(bigger.radius, 3));
+var smallerDensity = smaller.rocheDensity || (smaller.mass / Math.pow(smaller.radius, 3));
+var rocheLimit = bigger.radius * 2.44 * Math.cbrt(biggerDensity / smallerDensity);
 if (dist < rocheLimit && dist > bigger.radius + smaller.radius) {
 return { bigger: bigger, smaller: smaller };
 }
@@ -580,7 +584,7 @@ return;
 }
 var ddx = x - nearest.x, ddy = y - nearest.y;
 var d = Math.sqrt(ddx * ddx + ddy * ddy);
-var speed = Math.sqrt(G * nearest.mass / d) * 0.98;
+var speed = Math.sqrt(G * nearest.mass / d);
 var vx = (-ddy / d) * speed + nearest.vx;
 var vy = (ddx / d) * speed + nearest.vy;
 var nb = new Body(x, y, vx, vy, type);
@@ -607,7 +611,6 @@ if (dist < bestDist) { bestDist = dist; b.nearestStarAngle = Math.atan2(dy, dx);
 // ── Physics Step ──────────────────────────────────────────────────
 function step(dt) {
 if (paused) return;
-dt = dt * timeWarp;
 simTime += dt * 0.016;
 var i, j, b, bb, a, dx, dy, dist2, minDist, dist, force, fx, fy;
 
@@ -655,19 +658,9 @@ var wforce = well.strength * a.mass / (dist2 + 100);
 fx += wforce * dx / softDist; fy += wforce * dy / softDist;
 }
 
-if (a.isHeavy) {
-var dominantPull = false;
-for (var jj = 0; jj < bodies.length; jj++) {
-if (jj === i) continue;
-var bbb = bodies[jj];
-if (bbb.mass >= a.mass * 0.3) { dominantPull = true; break; }
-}
-if (!dominantPull) {
-a.vx = 0; a.vy = 0; fx = 0; fy = 0;
-} else {
-fx *= 0.4; fy *= 0.4;
-}
-}
+// Every body, including stars and black holes, receives the same gravitational
+// acceleration. This preserves the system centre of mass instead of pinning a
+// Sun in place when a smaller body pulls on it.
 a.vx += (fx / a.mass) * dt; a.vy += (fy / a.mass) * dt;
 a.vx *= damping; a.vy *= damping;
 }
@@ -841,6 +834,18 @@ var i, s, p, b, t, grad, bodyGrad, glowR, lw;
 
 for (i = 0; i < nebulae.length; i++) drawNebula(nebulae[i]);
 
+// The Solar System preset keeps these subtle guide paths visible, while the
+// moving trails still show the actual, simulated orbit of each planet.
+for (i = 0; i < orbitGuides.length; i++) {
+var guide = orbitGuides[i];
+if (!guide.primary || guide.primary.dead) continue;
+ctx.beginPath();
+ctx.arc(guide.primary.x, guide.primary.y, guide.radius, 0, Math.PI * 2);
+ctx.strokeStyle = 'rgba(235,210,190,0.38)';
+ctx.lineWidth = 1 / camera.zoom;
+ctx.stroke();
+}
+
 for (i = 0; i < shockwaves.length; i++) {
 s = shockwaves[i];
 ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
@@ -877,6 +882,7 @@ ctx.beginPath(); ctx.moveTo(b.trail[t - 1].x, b.trail[t - 1].y); ctx.lineTo(b.tr
 ctx.strokeStyle = hexToRgba(b.glow, ta); ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.stroke();
 }
 }
+
 
 glowR = b.radius * (b.type === 'blackhole' ? 3 : 4);
 grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, glowR);
@@ -1124,7 +1130,7 @@ btn.classList.toggle('active', paused);
 }
 
 function clearAll() {
-bodies = []; particles = []; shockwaves = []; nebulae = []; gravityWells = [];
+bodies = []; particles = []; shockwaves = []; nebulae = []; gravityWells = []; orbitGuides = [];
 deselectBody();
 ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
@@ -1154,29 +1160,48 @@ var star = new Body(0, 0, 0, 0, 'star');
 star.starClass = 'G'; star.mass = 500; star.radius = 22; star.vx = 0; star.vy = 0;
 star.color = starClassColors['G']; star.glow = starClassGlows['G'];
 bodies.push(star);
-// FIX: push orbits further out so planets have room to breathe
-var orbits = [120, 200, 300, 420, 550];
-var cols = ['#6eb5ff', '#ffaa44', '#44ff88', '#ff4488', '#bb88ff'];
-var hasRingsArr = [false, false, true, false, true];
+// Eight light, well-separated planets: their masses are kept small relative to
+// the Sun so the preset remains stable instead of becoming a collision demo.
+var orbits = [95, 140, 195, 270, 355, 450, 555, 680];
+var cols = ['#aaa39b', '#d69262', '#4e89cf', '#c76853', '#d2a46d', '#d8c895', '#8ac9c2', '#5b70c7'];
+var radii = [3.2, 3.8, 4.6, 5.2, 9.5, 8.2, 7.2, 7.0];
+var masses = [0.03, 0.05, 0.08, 0.12, 0.35, 0.25, 0.20, 0.18];
+var hasRingsArr = [false, false, false, false, false, true, true, false];
+var systemPx = 0, systemPy = 0;
+orbitGuides = orbits.map(function(radius) { return { primary: star, radius: radius }; });
 for (var i = 0; i < orbits.length; i++) {
 var r = orbits[i], angle = Math.random() * Math.PI * 2;
-var speed = Math.sqrt(G * star.mass / r) * 0.97;
+var speed = Math.sqrt(G * (star.mass + masses[i]) / r);
 var planet = new Body(Math.cos(angle) * r, Math.sin(angle) * r, -Math.sin(angle) * speed, Math.cos(angle) * speed, 'planet');
-planet.color = cols[i]; planet.radius = 5 + i * 1.8; planet.mass = 4 + i * 3;
+planet.color = cols[i]; planet.radius = radii[i]; planet.mass = masses[i];
+// Display size is deliberately exaggerated, so keep a realistic material
+// density for tidal calculations rather than deriving it from screen radius.
+planet.rocheDensity = 0.12;
 if (hasRingsArr[i]) { planet.hasRings = true; planet.ringTilt = 0.25 + Math.random() * 0.2; planet.ringColor = cols[i]; }
 bodies.push(planet);
 }
-spawnAsteroidBeltAt(260, 25, star);
+spawnAsteroidBeltAt(230, 25, star, true);
+// Give the Sun its small physical recoil so the complete system starts with no
+// artificial drift, while still allowing it to respond to later impacts.
+systemPx = 0;
+systemPy = 0;
+for (var p = 1; p < bodies.length; p++) {
+systemPx += bodies[p].mass * bodies[p].vx;
+systemPy += bodies[p].mass * bodies[p].vy;
+}
+star.vx = -systemPx / star.mass;
+star.vy = -systemPy / star.mass;
 resetView();
 logEvent('🌞 SOLAR SYSTEM SPAWNED', null, null);
 }
 
-function spawnAsteroidBeltAt(radius, count, centralBody) {
+function spawnAsteroidBeltAt(radius, count, centralBody, stable) {
 for (var i = 0; i < count; i++) {
 var angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
-var r = radius + (Math.random() - 0.5) * 30;
-var speed = Math.sqrt(G * centralBody.mass / r) * (0.95 + Math.random() * 0.1);
+var r = radius + (Math.random() - 0.5) * (stable ? 16 : 30);
+var speed = Math.sqrt(G * centralBody.mass / r) * (stable ? 1 : (0.95 + Math.random() * 0.1));
 var asteroid = new Body(centralBody.x + Math.cos(angle) * r, centralBody.y + Math.sin(angle) * r, -Math.sin(angle) * speed + centralBody.vx, Math.cos(angle) * speed + centralBody.vy, 'asteroid');
+if (stable) { asteroid.mass = 0.02; asteroid.radius = 1.2; }
 bodies.push(asteroid);
 }
 }
@@ -1374,7 +1399,13 @@ function loop(ts) {
 if (!last) last = ts;
 var dt = Math.min((ts - last) / 16.67, 3);
 last = ts; frameCount++;
-step(dt); draw();
+// Keep each physics update short. Large time-warp jumps otherwise inject energy
+// into close orbits and can make bodies fall into their primary unexpectedly.
+var totalDt = dt * timeWarp;
+var substeps = Math.max(1, Math.ceil(totalDt));
+var subDt = totalDt / substeps;
+for (var i = 0; i < substeps; i++) step(subDt);
+draw();
 if (frameCount % 10 === 0) updateStats();
 requestAnimationFrame(loop);
 }
@@ -1482,31 +1513,3 @@ simBtn.onclick = function() {
     }
 };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
