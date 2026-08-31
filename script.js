@@ -1,21 +1,92 @@
 // GRAVITY - Physics Engine v3.2 
-window.alert("This simulation is simple and doesn't show everything accurately it's made for teaching purposes in a playfull and interactive way without being too heavy to run or too complicated to understand. It's also still in development.");
+window.alert("Designed as a teaching tool, this simulation offers a simplified overview rather than a fully detailed model. give any feedback on how to improve ty.");
 // ── Stars Background ─────────────────────────────────────────────
+// Realistic-ish deep space backdrop: soft nebula clouds + a faint Milky Way
+// band, then a starfield with real star-color variation (blue-white giants,
+// yellow-white, warm red dwarfs) and a subtle twinkle. Rebuilt on resize,
+// gently redrawn each frame from the main loop for the twinkle animation.
 var starCanvas = document.getElementById('stars');
 var sCtx = starCanvas.getContext('2d');
+var starField = [];
+var nebulaClouds = [];
+
+function buildStarField() {
+var w = starCanvas.width, h = starCanvas.height;
+var starColors = ['255,255,255', '255,246,220', '255,224,180', '210,225,255', '175,200,255', '255,200,170'];
+var count = Math.round((w * h) / 2200);
+starField = [];
+for (var i = 0; i < count; i++) {
+var glow = Math.random() < 0.035;
+starField.push({
+x: Math.random() * w,
+y: Math.random() * h,
+r: glow ? (Math.random() * 1.3 + 1.1) : (Math.random() * 0.9 + 0.2),
+baseAlpha: glow ? (Math.random() * 0.25 + 0.65) : (Math.random() * 0.55 + 0.12),
+color: starColors[Math.floor(Math.random() * starColors.length)],
+twinkleSpeed: Math.random() * 0.0018 + 0.0004,
+twinklePhase: Math.random() * Math.PI * 2,
+glow: glow
+});
+}
+
+var nebulaColors = ['70,55,150', '30,75,135', '110,40,95', '20,95,115'];
+nebulaClouds = [];
+var clouds = 4;
+for (var j = 0; j < clouds; j++) {
+nebulaClouds.push({
+x: Math.random() * w,
+y: Math.random() * h,
+r: Math.random() * (Math.max(w, h) * 0.32) + Math.max(w, h) * 0.16,
+color: nebulaColors[j % nebulaColors.length],
+alpha: Math.random() * 0.05 + 0.025
+});
+}
+}
 
 function resizeStars() {
 starCanvas.width = window.innerWidth;
 starCanvas.height = window.innerHeight;
-sCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
-for (var i = 0; i < 280; i++) {
-var x = Math.random() * starCanvas.width;
-var y = Math.random() * starCanvas.height;
-var r = Math.random() * 1.3;
-var a = Math.random() * 0.7 + 0.1;
+buildStarField();
+drawStars(0);
+}
+
+function drawStars(ts) {
+var w = starCanvas.width, h = starCanvas.height, i;
+sCtx.clearRect(0, 0, w, h);
+
+for (i = 0; i < nebulaClouds.length; i++) {
+var c = nebulaClouds[i];
+var ng = sCtx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
+ng.addColorStop(0, 'rgba(' + c.color + ',' + c.alpha + ')');
+ng.addColorStop(1, 'rgba(' + c.color + ',0)');
+sCtx.fillStyle = ng;
+sCtx.fillRect(0, 0, w, h);
+}
+
+sCtx.save();
+sCtx.translate(w * 0.5, h * 0.5);
+sCtx.rotate(-0.4);
+var band = sCtx.createLinearGradient(0, -h * 0.16, 0, h * 0.16);
+band.addColorStop(0, 'rgba(190,200,255,0)');
+band.addColorStop(0.5, 'rgba(190,200,255,0.045)');
+band.addColorStop(1, 'rgba(190,200,255,0)');
+sCtx.fillStyle = band;
+sCtx.fillRect(-w, -h * 0.16, w * 2, h * 0.32);
+sCtx.restore();
+
+for (i = 0; i < starField.length; i++) {
+var s = starField[i];
+var tw = Math.sin(ts * s.twinkleSpeed + s.twinklePhase) * (s.glow ? 0.2 : 0.32);
+var a = Math.max(0, Math.min(1, s.baseAlpha + tw));
+if (s.glow) {
+var gg = sCtx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 4.5);
+gg.addColorStop(0, 'rgba(' + s.color + ',' + (a * 0.45) + ')');
+gg.addColorStop(1, 'rgba(' + s.color + ',0)');
+sCtx.beginPath(); sCtx.arc(s.x, s.y, s.r * 4.5, 0, Math.PI * 2); sCtx.fillStyle = gg; sCtx.fill();
+}
 sCtx.beginPath();
-sCtx.arc(x, y, r, 0, Math.PI * 2);
-sCtx.fillStyle = 'rgba(255,255,255,' + a + ')';
+sCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+sCtx.fillStyle = 'rgba(' + s.color + ',' + a + ')';
 sCtx.fill();
 }
 }
@@ -134,6 +205,7 @@ var shockwaves = [];
 var nebulae = [];
 var gravityWells = [];
 var orbitGuides = [];
+var showOrbitGuides = false; // guide circles hidden — planets still orbit exactly the same, this only hides the drawing
 var paused = false;
 var simTime = 0;
 var novaCount = 0;
@@ -834,8 +906,11 @@ var i, s, p, b, t, grad, bodyGrad, glowR, lw;
 
 for (i = 0; i < nebulae.length; i++) drawNebula(nebulae[i]);
 
-// The Solar System preset keeps these subtle guide paths visible, while the
-// moving trails still show the actual, simulated orbit of each planet.
+// The Solar System preset used to draw subtle guide circles showing each
+// planet's orbit radius. They're hidden now (showOrbitGuides = false) —
+// this is purely visual, the orbitGuides data and the actual gravity sim
+// are untouched, so planets still follow their real, simulated paths.
+if (showOrbitGuides) {
 for (i = 0; i < orbitGuides.length; i++) {
 var guide = orbitGuides[i];
 if (!guide.primary || guide.primary.dead) continue;
@@ -844,6 +919,7 @@ ctx.arc(guide.primary.x, guide.primary.y, guide.radius, 0, Math.PI * 2);
 ctx.strokeStyle = 'rgba(235,210,190,0.38)';
 ctx.lineWidth = 1 / camera.zoom;
 ctx.stroke();
+}
 }
 
 for (i = 0; i < shockwaves.length; i++) {
@@ -1406,6 +1482,7 @@ var substeps = Math.max(1, Math.ceil(totalDt));
 var subDt = totalDt / substeps;
 for (var i = 0; i < substeps; i++) step(subDt);
 draw();
+if (frameCount % 2 === 0) drawStars(ts);
 if (frameCount % 10 === 0) updateStats();
 requestAnimationFrame(loop);
 }
