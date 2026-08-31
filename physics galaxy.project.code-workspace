@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../WebOS"
+		},
+		{
+			"path": "../Prototype#2"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "WebOS"
+	}
+}

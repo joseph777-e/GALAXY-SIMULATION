@@ -1,0 +1,16 @@
+! VERY IMPORTANT! THIS SHOULD BE DONE ONE BY ONE AND NOT ALL AT ONCE CAUSE LIKE IT WILL FINISH ALL THE TOKENS MID PROCESS OF A STEP AND RUIN IT ALL !!!!!
+
+#1 the planets and comets cant oribit the sun too well (in solar system mode especcially and even in other cases) like i dont know why but they end up prematurely going too close to the sun and exploding like whyyyy ... i mean its not the case for the real solar system so idk why this simulation does this like nonsense mybe has to do with some calculatons in the java script alsooo like the sun is not moving even when u throw a planet at it like it doessnt budge even a black hole dont pull it or anything its kinda weird and it needs to get corrected asap like i want it to be real and be fidel .
+to the actual solar system like it neeeds to amost do the same things as if i did it in the actual space 
+
+#2 i think it would be good to represent the roche limit in a kind of a different way and not just an explosion and that its like maybe some debris that are LIMITED could get ejected into the system you made like with also better animation if possible. but if it's hard to improve on this its better to keep the normal roche limit display.
+
+#3 also correct the side bar like dont make the things be too small but fitt perfectly like where the spawn type is or body sze is like they kinda too small and stuff so like they need to become fitt into the side bar and allow to scroll all the way down and to also be able to scroll all the way up with no problem.
+
+#5 if possible add a feature that allow to save a certain planet build like 1st we need to add a feature that allow users to create a solar system of theurs and like fully personalize it and make be able to save it afterward.
+
+#6 btyy also add a space like background like so far the background is just black it needs to look like it being done in space..yeah ....
+
+////////////////////////
+ so what need to be done to finish rn is jut like make the bacground look more like space like idk add more shinny balls at the end make it simple and realistic and another thing is also i want the time warp to be able to be slowerr... more slower than 1
+ also if possible we adda small feature to mak and save a certain type of build like make their own solar system or galaxy idk... i will be saved in the local storage cause i dont want to have to make a whole new thing for logins..

@@ -18,7 +18,6 @@
 <div class="intro-title">GRAVITY</div>
 <div class="intro-sub">N-Body Physics Playground</div>
 <button class="intro-btn" onclick="startSim()">Launch Simulation</button>
-<div class="intro-sub">This simulation is simple and doesnt show everything accurately its made for teaching young people in an interactive way without being too heavy to run or too complicated to understand. It's also still being improved.</div>
 
 </div>
 
@@ -105,8 +104,8 @@ ZOOM: <span id="s-zoom">100</span>%
 <input type="range" min="0" max="30" value="10" step="1" oninput="updateSlider('gravity',this.value)">
 </div>
 <div class="slider-group">
-<div class="slider-row"><span class="slider-name">Damping</span><span class="slider-val" id="v-damping">0.999</span></div>
-<input type="range" min="980" max="1000" value="999" step="1" oninput="updateSlider('damping',this.value)">
+<div class="slider-row"><span class="slider-name">Damping</span><span class="slider-val" id="v-damping">1.000</span></div>
+<input type="range" min="980" max="1000" value="1000" step="1" oninput="updateSlider('damping',this.value)">
 </div>
 <div class="slider-group">
 <div class="slider-row"><span class="slider-name">Trail Length</span><span class="slider-val" id="v-trail">80</span></div>
