@@ -13,7 +13,7 @@
 <canvas id="sim"></canvas>
 <div id="flash"></div>
 
-<!-- INTRO SCREEN -->
+
 <div id="intro">
 <div class="intro-title">GRAVITY</div>
 <div class="intro-sub">N-Body Physics Playground</div>
@@ -21,7 +21,6 @@
 
 </div>
 
-<!-- TOP BAR -->
 <div id="topbar">
 <div class="logo">
 <div class="logo-title">Gravity</div>
@@ -37,14 +36,14 @@ ZOOM: <span id="s-zoom">100</span>%
 </div>
 
 
-<!-- SIDE PANEL -->
+
 <div id="panel">
 <div id="panel-toggle" onclick="togglePanel()" title="Toggle panel">
 <span id="panel-toggle-icon">◀</span>
 </div>
 <div id="panel-inner">
 
-<!-- Spawn Type -->
+
 <div class="panel-section">
 <div class="panel-label">Spawn Type</div>
 <div class="type-grid">
@@ -66,7 +65,7 @@ ZOOM: <span id="s-zoom">100</span>%
 </div>
 </div>
 
-<!-- Body Size -->
+
 <div class="panel-section">
 <div class="panel-label">Body Size</div>
 <div class="slider-group">
@@ -86,7 +85,7 @@ ZOOM: <span id="s-zoom">100</span>%
 </div>
 </div>
 
-<!-- Spawn Mode -->
+
 <div class="panel-section">
 <div class="panel-label">Spawn Mode</div>
 <div class="btn-group">
@@ -96,7 +95,6 @@ ZOOM: <span id="s-zoom">100</span>%
 </div>
 </div>
 
-<!-- Physics -->
 <div class="panel-section">
 <div class="panel-label">Physics</div>
 <div class="slider-group">
@@ -123,7 +121,6 @@ ZOOM: <span id="s-zoom">100</span>%
 </div>
 </div>
 
-<!-- View -->
 <div class="panel-section">
 <div class="panel-label">View</div>
 <div class="slider-group">
@@ -158,14 +155,13 @@ ZOOM: <span id="s-zoom">100</span>%
 </div>
 </div>
 
-<!-- ZOOM CONTROLS (floating left) -->
+
 <div id="zoom-controls">
 <button class="zoom-btn" onclick="changeZoom(1.2)" title="Zoom in">+</button>
 <button class="zoom-btn" onclick="changeZoom(1/1.2)" title="Zoom out">−</button>
 <button class="zoom-btn small" onclick="resetView()" title="Reset zoom">⊙</button>
 </div>
 
-<!-- SELECTED BODY INSPECTOR -->
 <div id="inspector" class="hidden">
 <div id="inspector-header">
 <span id="inspector-icon"></span>
@@ -186,10 +182,10 @@ ZOOM: <span id="s-zoom">100</span>%
 </div>
 </div>
 
-<!-- EVENT LOG (bottom left) -->
+
 <div id="eventlog"></div>
 
-<!-- EVENT DETAIL PANEL (bottom center) -->
+
 <div id="event-detail" class="hidden">
 <div id="event-detail-close" onclick="closeDetail()">✕</div>
 <div id="event-detail-icon"></div>
@@ -197,12 +193,11 @@ ZOOM: <span id="s-zoom">100</span>%
 <div id="event-detail-body"></div>
 </div>
 
-<!-- HINTS -->
 <div id="hint">Click to spawn · Drag to launch · Scroll to zoom · Mid-drag to pan · Click body to select</div>
 <div id="orbit-hint">Click near a body to auto-orbit around it</div>
 <div id="gravity-hint">Hold & drag to pull bodies toward cursor</div>
 
-<!-- SPACE ENCYCLOPEDIA -->
+
 <div id="encyclopedia" class="hidden">
 <div id="enc-header">
 <div id="enc-header-left">
