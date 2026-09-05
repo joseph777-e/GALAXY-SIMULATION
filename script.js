@@ -1,19 +1,89 @@
+// GRAVITY project :)
+window.alert("This simulation is simple and doesn't show everything accurately it's made for teaching purposes in a playfull and interactive way without being too heavy to run or too complicated to understand. It's also still in development.");
+//  Background 
 
 var starCanvas = document.getElementById('stars');
 var sCtx = starCanvas.getContext('2d');
+var starField = [];
+var nebulaClouds = [];
+
+function buildStarField() {
+var w = starCanvas.width, h = starCanvas.height;
+var starColors = ['255,255,255', '255,246,220', '255,224,180', '210,225,255', '175,200,255', '255,200,170'];
+var count = Math.round((w * h) / 2200);
+starField = [];
+for (var i = 0; i < count; i++) {
+var glow = Math.random() < 0.035;
+starField.push({
+x: Math.random() * w,
+y: Math.random() * h,
+r: glow ? (Math.random() * 1.3 + 1.1) : (Math.random() * 0.9 + 0.2),
+baseAlpha: glow ? (Math.random() * 0.25 + 0.65) : (Math.random() * 0.55 + 0.12),
+color: starColors[Math.floor(Math.random() * starColors.length)],
+twinkleSpeed: Math.random() * 0.0018 + 0.0004,
+twinklePhase: Math.random() * Math.PI * 2,
+glow: glow
+});
+}
+
+var nebulaColors = ['70,55,150', '30,75,135', '110,40,95', '20,95,115'];
+nebulaClouds = [];
+var clouds = 4;
+for (var j = 0; j < clouds; j++) {
+nebulaClouds.push({
+x: Math.random() * w,
+y: Math.random() * h,
+r: Math.random() * (Math.max(w, h) * 0.32) + Math.max(w, h) * 0.16,
+color: nebulaColors[j % nebulaColors.length],
+alpha: Math.random() * 0.05 + 0.025
+});
+}
+}
 
 function resizeStars() {
 starCanvas.width = window.innerWidth;
 starCanvas.height = window.innerHeight;
-sCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
-for (var i = 0; i < 280; i++) {
-var x = Math.random() * starCanvas.width;
-var y = Math.random() * starCanvas.height;
-var r = Math.random() * 1.3;
-var a = Math.random() * 0.7 + 0.1;
+buildStarField();
+drawStars(0);
+}
+
+function drawStars(ts) {
+var w = starCanvas.width, h = starCanvas.height, i;
+sCtx.clearRect(0, 0, w, h);
+
+for (i = 0; i < nebulaClouds.length; i++) {
+var c = nebulaClouds[i];
+var ng = sCtx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
+ng.addColorStop(0, 'rgba(' + c.color + ',' + c.alpha + ')');
+ng.addColorStop(1, 'rgba(' + c.color + ',0)');
+sCtx.fillStyle = ng;
+sCtx.fillRect(0, 0, w, h);
+}
+
+sCtx.save();
+sCtx.translate(w * 0.5, h * 0.5);
+sCtx.rotate(-0.4);
+var band = sCtx.createLinearGradient(0, -h * 0.16, 0, h * 0.16);
+band.addColorStop(0, 'rgba(190,200,255,0)');
+band.addColorStop(0.5, 'rgba(190,200,255,0.045)');
+band.addColorStop(1, 'rgba(190,200,255,0)');
+sCtx.fillStyle = band;
+sCtx.fillRect(-w, -h * 0.16, w * 2, h * 0.32);
+sCtx.restore();
+
+for (i = 0; i < starField.length; i++) {
+var s = starField[i];
+var tw = Math.sin(ts * s.twinkleSpeed + s.twinklePhase) * (s.glow ? 0.2 : 0.32);
+var a = Math.max(0, Math.min(1, s.baseAlpha + tw));
+if (s.glow) {
+var gg = sCtx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 4.5);
+gg.addColorStop(0, 'rgba(' + s.color + ',' + (a * 0.45) + ')');
+gg.addColorStop(1, 'rgba(' + s.color + ',0)');
+sCtx.beginPath(); sCtx.arc(s.x, s.y, s.r * 4.5, 0, Math.PI * 2); sCtx.fillStyle = gg; sCtx.fill();
+}
 sCtx.beginPath();
-sCtx.arc(x, y, r, 0, Math.PI * 2);
-sCtx.fillStyle = 'rgba(255,255,255,' + a + ')';
+sCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+sCtx.fillStyle = 'rgba(' + s.color + ',' + a + ')';
 sCtx.fill();
 }
 }
@@ -30,7 +100,7 @@ canvas.height = window.innerHeight;
 resize();
 window.addEventListener('resize', function() { resize(); resizeStars(); });
 
-
+//view
 var camera = { x: 0, y: 0, zoom: 1.0, minZoom: 0.1, maxZoom: 5.0 };
 var followTarget = null;
 var isFollowing = false;
@@ -125,17 +195,20 @@ canvas.style.cursor = 'grab';
 });
 canvas.addEventListener('contextmenu', function(e) { e.preventDefault(); });
 
+// how basically it should strt
 var bodies = [];
 var particles = [];
 var shockwaves = [];
 var nebulae = [];
 var gravityWells = [];
+var orbitGuides = [];
+var showOrbitGuides = false; 
 var paused = false;
 var simTime = 0;
 var novaCount = 0;
 var frameCount = 0;
 var G = 1.0;
-var damping = 0.999;
+var damping = 1.0;
 var trailLen = 80;
 var spawnType = 'planet';
 var spawnMode = 'launch';
@@ -225,7 +298,6 @@ if (dist < hitRadius && dist < bestDist) { best = bodies[i]; bestDist = dist; }
 return best;
 }
 
-
 var starClasses = ['M', 'K', 'G', 'F', 'A', 'B', 'O'];
 var starClassColors = {
 'M': 'hsl(10,80%,55%)', 'K': 'hsl(25,85%,60%)', 'G': 'hsl(48,100%,70%)',
@@ -249,7 +321,7 @@ for (var j = 0; j < weights.length; j++) { sum += weights[j]; if (roll < sum) re
 return 'G';
 }
 
-
+// ── Body Constructor ──────────────────────────────────────────────
 function getRadius(type, sc) {
 if (customRadius > 0) return customRadius;
 if (type === 'planet') return 5 + Math.random() * 9;
@@ -315,6 +387,7 @@ this.pulsarAngle = 0;
 this.pulsarPhase = 0;
 }
 
+
 function Particle(x, y, vx, vy, color, life, size) {
 this.x = x; 
 this.y = y; 
@@ -331,6 +404,7 @@ this.vx *= 0.97; this.vy *= 0.97; this.life -= dt;
 };
 Particle.prototype.isAlive = function() { return this.life > 0; };
 Particle.prototype.alpha = function() { return Math.max(0, this.life / this.maxLife); };
+
 
 function Shockwave(x, y, maxR, color) {
 this.x = x; this.y = y; this.r = 0; this.maxR = maxR;
@@ -351,6 +425,7 @@ this.clouds.push({ ox: (Math.random() - 0.5) * this.maxRadius * 1.2, oy: (Math.r
 Nebula.prototype.update = function(dt) { this.life -= dt * 0.003; };
 Nebula.prototype.isAlive = function() { return this.life > 0; };
 
+
 function GravityWell(x, y, strength) {
 this.x = x; this.y = y; this.strength = strength; this.active = true;
 }
@@ -363,45 +438,31 @@ icon = '💥'; title = 'SUPERNOVA';
 body = '<strong>Type II Supernova</strong><br>Two stars collided, exceeding the Tolman-Oppenheimer-Volkoff limit.<br><br>'
 + 'Combined mass: <strong>' + (data.mass ? Math.round(data.mass) : '?') + ' units</strong><br>'
 + 'The explosion releases more energy than the Sun emits in its entire lifetime. A neutron star remnant has formed.';
-} 
-
-else if (type === 'tidal') {
+} else if (type === 'tidal') {
 icon = '🌀'; title = 'TIDAL DISRUPTION EVENT';
 body = '<strong>Tidal Disruption Event (TDE)</strong><br>A star was torn apart by the tidal forces of the black hole, forming a bright accretion disk of X-ray flares.<br><br>'
 + 'New black hole mass: <strong>' + (data.mass ? Math.round(data.mass) : '?') + ' units</strong>';
-} 
-
-else if (type === 'roche') {
+} else if (type === 'roche') {
 icon = '💫'; title = 'ROCHE LIMIT EXCEEDED';
 body = '<strong>Roche Limit Tidal Disruption</strong><br>Within the Roche limit, tidal forces exceed the bodys self-gravity, tearing it apart into debris.<br><br>This is how the rings of Saturn actually formed.';
-} 
-
-else if (type === 'merge') {
+} else if (type === 'merge') {
 icon = '🔵'; title = 'PLANETARY MERGER';
 body = '<strong>Accretionary Collision</strong><br>Two bodies merged. This is how planets form through accretion over millions of years.<br><br>'
 + 'New mass: <strong>' + (data.mass ? Math.round(data.mass) : '?') + ' units</strong>';
-} 
-
-else if (type === 'orbit') {
+} else if (type === 'orbit') {
 icon = '🪐'; title = 'ORBIT ESTABLISHED';
 body = '<strong>Stable Keplerian Orbit</strong><br>'
 + 'Radius: <strong>' + (data.dist ? Math.round(data.dist) : '?') + ' units</strong><br>'
 + 'Velocity: <strong>' + (data.speed ? data.speed.toFixed(2) : '?') + ' u/s</strong><br><br>'
 + 'Third Law of Kepler: T² ∝ a³';
-} 
-
-else if (type === 'neutron') {
+} else if (type === 'neutron') {
 icon = '🌑'; title = 'NEUTRON STAR FORMED';
 body = '<strong>Neutron Star Remnant</strong><br>The collapsed core of a supernova. A teaspoon would weigh ~10 billion tonnes on Earth.';
-} 
-
-else if (type === 'absorbed') {
+} else if (type === 'absorbed') {
 icon = '🕳️'; title = 'GRAVITATIONAL ABSORPTION';
 body = '<strong>Event Horizon Crossing</strong><br>Nothing — not even light — escapes once inside.<br><br>'
 + 'New black hole mass: <strong>' + (data.mass ? Math.round(data.mass) : '?') + ' units</strong>';
-} 
-
-else if (type === 'starclass') {
+} else if (type === 'starclass') {
 var classDesc = {
 'M': 'Red Dwarf — most common stars. Small, cool, and extremely long-lived (trillions of years).',
 'K': 'Orange Dwarf — slightly larger than red dwarfs. Stable output, ideal for habitable planets.',
@@ -413,10 +474,7 @@ var classDesc = {
 };
 icon = '⭐'; title = 'STAR SPAWNED — CLASS ' + (data.cls || '?');
 body = classDesc[data.cls] || 'Unknown class.';
-} 
-
-
-else if (type === 'pulsar') {
+} else if (type === 'pulsar') {
 icon = '💫'; title = 'PULSAR SYSTEM';
 body = '<strong>Millisecond Pulsar</strong><br>A rapidly rotating neutron star emitting beams of electromagnetic radiation. '
 + 'Pulsars spin hundreds of times per second and are among the most precise clocks in the universe.<br><br>'
@@ -448,7 +506,7 @@ setTimeout(function() { el.classList.add('fade'); }, 3500);
 setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 6000);
 }
 
-
+//supanova
 function triggerSupernova(x, y, mass, color) {
 novaCount++;
 logEvent('💥 SUPERNOVA', 'supernova', { x: x, y: y, mass: mass });
@@ -480,7 +538,7 @@ logEvent('🌑 NEUTRON STAR FORMED', 'neutron', {});
 }, 450);
 }
 
-
+// roche limit omd dont touch anything under pls
 function checkRocheLimit(i, j) {
 var a = bodies[i], b = bodies[j];
 if (a.dead || b.dead) return false;
@@ -490,7 +548,10 @@ else if (b.mass > a.mass * 5) { bigger = b; smaller = a; }
 else return false;
 var dx = smaller.x - bigger.x, dy = smaller.y - bigger.y;
 var dist = Math.sqrt(dx * dx + dy * dy);
-var rocheLimit = bigger.radius * 2.44 * Math.pow(bigger.mass / smaller.mass, 1 / 3);
+
+var biggerDensity = bigger.rocheDensity || (bigger.mass / Math.pow(bigger.radius, 3));
+var smallerDensity = smaller.rocheDensity || (smaller.mass / Math.pow(smaller.radius, 3));
+var rocheLimit = bigger.radius * 2.44 * Math.cbrt(biggerDensity / smallerDensity);
 if (dist < rocheLimit && dist > bigger.radius + smaller.radius) {
 return { bigger: bigger, smaller: smaller };
 }
@@ -527,7 +588,7 @@ particles.push(new Particle(smaller.x, smaller.y, Math.cos(pa) * ps, Math.sin(pa
 
 
 
-
+// Collision
 function handleCollision(i, j) {
 var a = bodies[i], b = bodies[j];
 if (a.dead || b.dead) return;
@@ -574,7 +635,7 @@ bodies.push(merged);
 }
 }
 
-
+// helperss orbit
 function spawnInOrbit(screenX, screenY, type) {
 var world = screenToWorld(screenX, screenY);
 var x = world.x, y = world.y;
@@ -590,7 +651,7 @@ return;
 }
 var ddx = x - nearest.x, ddy = y - nearest.y;
 var d = Math.sqrt(ddx * ddx + ddy * ddy);
-var speed = Math.sqrt(G * nearest.mass / d) * 0.98;
+var speed = Math.sqrt(G * nearest.mass / d);
 var vx = (-ddy / d) * speed + nearest.vx;
 var vy = (ddx / d) * speed + nearest.vy;
 var nb = new Body(x, y, vx, vy, type);
@@ -617,7 +678,6 @@ if (dist < bestDist) { bestDist = dist; b.nearestStarAngle = Math.atan2(dy, dx);
 
 function step(dt) {
 if (paused) return;
-dt = dt * timeWarp;
 simTime += dt * 0.016;
 var i, j, b, bb, a, dx, dy, dist2, minDist, dist, force, fx, fy;
 
@@ -625,7 +685,7 @@ for (i = 0; i < bodies.length; i++) {
 b = bodies[i];
 b.trail.push({ x: b.x, y: b.y });
 if (b.trail.length > trailLen) b.trail.shift();
-// spinny star goes brrr
+
 if (b.type === 'pulsar') {
 b.pulsarAngle += dt * 0.18;
 b.pulsarPhase += dt * 0.05;
@@ -665,19 +725,7 @@ var wforce = well.strength * a.mass / (dist2 + 100);
 fx += wforce * dx / softDist; fy += wforce * dy / softDist;
 }
 
-if (a.isHeavy) {
-var dominantPull = false;
-for (var jj = 0; jj < bodies.length; jj++) {
-if (jj === i) continue;
-var bbb = bodies[jj];
-if (bbb.mass >= a.mass * 0.3) { dominantPull = true; break; }
-}
-if (!dominantPull) {
-a.vx = 0; a.vy = 0; fx = 0; fy = 0;
-} else {
-fx *= 0.4; fy *= 0.4;
-}
-}
+// stars movement and blavk hole too
 a.vx += (fx / a.mass) * dt; a.vy += (fy / a.mass) * dt;
 a.vx *= damping; a.vy *= damping;
 }
@@ -713,6 +761,7 @@ bodies = survivingBodies;
 if (frameCount % 30 === 0) updateDayNight();
 }
 
+// Helpers 
 function hexToRgba(hex, alpha) {
 if (!hex) return 'rgba(200,200,200,' + alpha + ')';
 if (hex.indexOf('hsl') === 0) return hex.replace('hsl(', 'hsla(').replace(')', ',' + alpha + ')');
@@ -733,6 +782,7 @@ function lighten(color) {
     return color;
 }
 
+// ringssss
 function drawRings(b) {
 var tilt = b.ringTilt || 0.25;
 var innerR = b.radius * 1.5, outerR = b.radius * 2.6;
@@ -744,6 +794,7 @@ ctx.beginPath(); ctx.arc(0, 0, innerR + (outerR - innerR) * 0.25, 0, Math.PI * 2
 ctx.strokeStyle = hexToRgba(color, 0.2); ctx.lineWidth = (outerR - innerR) * 0.35; ctx.stroke();
 ctx.restore();
 }
+
 
 function drawLensing(b) {
 if (b.type !== 'blackhole') return;
@@ -759,9 +810,11 @@ ctx.beginPath(); ctx.arc(b.x, b.y, b.radius * 3.2, 0, Math.PI * 2);
 ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 2 / camera.zoom; ctx.stroke();
 }
 
+
 function drawPulsarBeams(b) {
 var beamLen = 160;
 var beamWidth = 8;
+// Two opposite beams that rotate
 for (var beam = 0; beam < 2; beam++) {
 var angle = b.pulsarAngle + beam * Math.PI;
 var pulse = 0.4 + 0.6 * Math.abs(Math.sin(b.pulsarPhase * 6 + beam * Math.PI));
@@ -783,6 +836,7 @@ ctx.lineCap = 'round';
 ctx.stroke();
 ctx.restore();
 }
+// Pulsing glow ring
 var glowPulse = 0.3 + 0.7 * Math.abs(Math.sin(b.pulsarPhase * 6));
 ctx.beginPath();
 ctx.arc(b.x, b.y, b.radius * 2.5, 0, Math.PI * 2);
@@ -790,6 +844,7 @@ ctx.strokeStyle = 'rgba(0,200,255,' + (0.4 * glowPulse) + ')';
 ctx.lineWidth = 3 / camera.zoom;
 ctx.stroke();
 }
+
 
 function drawNebula(n) {
 var alpha = n.life * 0.18;
@@ -803,6 +858,7 @@ ctx.fillStyle = gr; ctx.fill();
 }
 }
 
+
 function drawDayNight(b) {
 if (b.nearestStarAngle === undefined) return;
 var angle = b.nearestStarAngle;
@@ -810,6 +866,7 @@ var ng = ctx.createRadialGradient(b.x - Math.cos(angle) * b.radius * 0.3, b.y - 
 ng.addColorStop(0, 'rgba(0,0,0,0)'); ng.addColorStop(0.6, 'rgba(0,0,0,0)'); ng.addColorStop(1, 'rgba(0,0,20,0.55)');
 ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2); ctx.fillStyle = ng; ctx.fill();
 }
+
 
 function drawGravityWells() {
 for (var i = 0; i < gravityWells.length; i++) {
@@ -827,6 +884,7 @@ ctx.fillStyle = 'rgba(255,153,68,0.8)'; ctx.fill();
 }
 }
 
+
 function draw() {
 ctx.fillStyle = 'rgba(2,2,10,0.18)';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -840,6 +898,19 @@ ctx.scale(camera.zoom, camera.zoom);
 var i, s, p, b, t, grad, bodyGrad, glowR, lw;
 
 for (i = 0; i < nebulae.length; i++) drawNebula(nebulae[i]);
+
+
+if (showOrbitGuides) {
+for (i = 0; i < orbitGuides.length; i++) {
+var guide = orbitGuides[i];
+if (!guide.primary || guide.primary.dead) continue;
+ctx.beginPath();
+ctx.arc(guide.primary.x, guide.primary.y, guide.radius, 0, Math.PI * 2);
+ctx.strokeStyle = 'rgba(235,210,190,0.38)';
+ctx.lineWidth = 1 / camera.zoom;
+ctx.stroke();
+}
+}
 
 for (i = 0; i < shockwaves.length; i++) {
 s = shockwaves[i];
@@ -857,12 +928,13 @@ ctx.fillStyle = p.color.indexOf('hsl') === 0
 ctx.fill();
 }
 
-// half the ring goes behind the planet because apparently rings have manners
+
 for (i = 0; i < bodies.length; i++) {
 b = bodies[i];
 if (b.hasRings) { ctx.save(); ctx.globalAlpha = 0.5; drawRings(b); ctx.restore(); }
 }
 
+// Bodies
 for (i = 0; i < bodies.length; i++) {
 b = bodies[i];
 if (b.type === 'blackhole') drawLensing(b);
@@ -876,6 +948,7 @@ ctx.beginPath(); ctx.moveTo(b.trail[t - 1].x, b.trail[t - 1].y); ctx.lineTo(b.tr
 ctx.strokeStyle = hexToRgba(b.glow, ta); ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.stroke();
 }
 }
+
 
 glowR = b.radius * (b.type === 'blackhole' ? 3 : 4);
 grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, glowR);
@@ -925,6 +998,7 @@ ctx.strokeStyle = tg; ctx.lineWidth = b.radius * 0.8; ctx.lineCap = 'round'; ctx
 }
 }
 
+
 if (b === selectedBody) {
 ctx.beginPath(); ctx.arc(b.x, b.y, b.radius + 5 / camera.zoom, 0, Math.PI * 2);
 ctx.strokeStyle = 'rgba(200,255,0,0.8)'; ctx.lineWidth = 1.5 / camera.zoom;
@@ -932,7 +1006,7 @@ ctx.setLineDash([4 / camera.zoom, 3 / camera.zoom]); ctx.stroke(); ctx.setLineDa
 }
 }
 
-// and now the ring gets to come back in front
+
 for (i = 0; i < bodies.length; i++) {
 b = bodies[i];
 if (b.hasRings) {
@@ -944,6 +1018,7 @@ drawRings(b); ctx.restore();
 
 drawGravityWells();
 
+// Drag arrow
 if (isDragging && spawnMode === 'launch' && !isPanning) {
 var ws = screenToWorld(dragStart.sx, dragStart.sy);
 var we = screenToWorld(mouseScreen.x, mouseScreen.y);
@@ -961,6 +1036,7 @@ ctx.beginPath(); ctx.arc(ws.x, ws.y, 8 / camera.zoom, 0, Math.PI * 2);
 ctx.strokeStyle = 'rgba(200,255,0,0.4)'; ctx.lineWidth = 1 / camera.zoom; ctx.stroke();
 }
 }
+
 
 if (spawnMode === 'orbit') {
 var wm = screenToWorld(mouseScreen.x, mouseScreen.y);
@@ -980,7 +1056,8 @@ ctx.strokeStyle = 'rgba(0,200,255,0.3)'; ctx.lineWidth = 1.5 / camera.zoom; ctx.
 
 ctx.restore();
 }
-jkuktut
+
+
 var isDragging = false;
 var isWellDragging = false;
 var dragStart = { sx: 0, sy: 0 };
@@ -1076,6 +1153,7 @@ bodies.push(new Body(world.x, world.y, dx * 0.06 / camera.zoom, dy * 0.06 / came
 touchDragStart = null;
 }, { passive: false });
 
+
 function setType(type, el) {
 spawnType = type;
 var btns = document.querySelectorAll('.type-btn');
@@ -1099,13 +1177,13 @@ if (mode !== 'gravity') gravityWells = [];
 function updateSlider(name, val) {
 var v = parseFloat(val);
 if (name === 'gravity') { G = v / 10; document.getElementById('v-gravity').textContent = G.toFixed(1); }
-else if (name === 'damping') { damping = v / 1000; document.getElementById('v-damping').textContent = damping.toFixed(3); }
-else if (name === 'trail') { trailLen = parseInt(val); document.getElementById('v-trail').textContent = trailLen; }
-else if (name === 'zoom') { camera.zoom = v / 100; document.getElementById('v-zoom').textContent = Math.round(v) + '%'; document.getElementById('s-zoom').textContent = Math.round(v); }
-else if (name === 'spawnRadius') { customRadius = parseInt(val); document.getElementById('v-spawnRadius').textContent = customRadius; }
-else if (name === 'spawnMass') { customMass = parseInt(val); document.getElementById('v-spawnMass').textContent = customMass === 0 ? 'auto' : customMass; }
-else if (name === 'timewarp') { timeWarp = v; document.getElementById('v-timewarp').textContent = v.toFixed(1) + 'x'; }
-else if (name === 'wellstrength') { wellStrength = v; document.getElementById('v-wellstrength').textContent = Math.round(v); }
+ else if (name === 'damping') { damping = v / 1000; document.getElementById('v-damping').textContent = damping.toFixed(3); }
+   else if (name === 'trail') { trailLen = parseInt(val); document.getElementById('v-trail').textContent = trailLen; }
+    else if (name === 'zoom') { camera.zoom = v / 100; document.getElementById('v-zoom').textContent = Math.round(v) + '%'; document.getElementById('s-zoom').textContent = Math.round(v); }
+     else if (name === 'spawnRadius') { customRadius = parseInt(val); document.getElementById('v-spawnRadius').textContent = customRadius; }
+      else if (name === 'spawnMass') { customMass = parseInt(val); document.getElementById('v-spawnMass').textContent = customMass === 0 ? 'auto' : customMass; }
+       else if (name === 'timewarp') { timeWarp = v; document.getElementById('v-timewarp').textContent = v.toFixed(1) + 'x'; }
+        else if (name === 'wellstrength') { wellStrength = v; document.getElementById('v-wellstrength').textContent = Math.round(v); }
 
 
 }
@@ -1118,7 +1196,7 @@ btn.classList.toggle('active', paused);
 }
 
 function clearAll() {
-bodies = []; particles = []; shockwaves = []; nebulae = []; gravityWells = [];
+bodies = []; particles = []; shockwaves = []; nebulae = []; gravityWells = []; orbitGuides = [];
 deselectBody();
 ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
@@ -1130,6 +1208,7 @@ document.getElementById('panel').classList.toggle('collapsed', panelCollapsed);
 document.getElementById('panel-toggle-icon').textContent = panelCollapsed ? '▶' : '◀';
 }
 
+//some presets
 
 function spawnChaos() {
 var types = ['planet', 'star', 'comet', 'planet', 'planet', 'comet', 'asteroid'];
@@ -1143,31 +1222,49 @@ logEvent('💥 CHAOS MODE ACTIVATED', null, null);
 function spawnOrbit() {
 clearAll();
 var star = new Body(0, 0, 0, 0, 'star');
+
 star.starClass = 'G'; star.mass = 500; star.radius = 22; star.vx = 0; star.vy = 0;
 star.color = starClassColors['G']; star.glow = starClassGlows['G'];
 bodies.push(star);
-var orbits = [120, 200, 300, 420, 550];
-var cols = ['#6eb5ff', '#ffaa44', '#44ff88', '#ff4488', '#bb88ff'];
-var hasRingsArr = [false, false, true, false, true];
+
+var orbits = [95, 140, 195, 270, 355, 450, 555, 680];
+var cols = ['#aaa39b', '#d69262', '#4e89cf', '#c76853', '#d2a46d', '#d8c895', '#8ac9c2', '#5b70c7'];
+var radii = [3.2, 3.8, 4.6, 5.2, 9.5, 8.2, 7.2, 7.0];
+var masses = [0.03, 0.05, 0.08, 0.12, 0.35, 0.25, 0.20, 0.18];
+var hasRingsArr = [false, false, false, false, false, true, true, false];
+var systemPx = 0, systemPy = 0;
+orbitGuides = orbits.map(function(radius) { return { primary: star, radius: radius }; });
 for (var i = 0; i < orbits.length; i++) {
 var r = orbits[i], angle = Math.random() * Math.PI * 2;
-var speed = Math.sqrt(G * star.mass / r) * 0.97;
+var speed = Math.sqrt(G * (star.mass + masses[i]) / r);
 var planet = new Body(Math.cos(angle) * r, Math.sin(angle) * r, -Math.sin(angle) * speed, Math.cos(angle) * speed, 'planet');
-planet.color = cols[i]; planet.radius = 5 + i * 1.8; planet.mass = 4 + i * 3;
+planet.color = cols[i]; planet.radius = radii[i]; planet.mass = masses[i];
+
+planet.rocheDensity = 0.12;
 if (hasRingsArr[i]) { planet.hasRings = true; planet.ringTilt = 0.25 + Math.random() * 0.2; planet.ringColor = cols[i]; }
 bodies.push(planet);
 }
-spawnAsteroidBeltAt(260, 25, star);
+spawnAsteroidBeltAt(230, 25, star, true);
+
+systemPx = 0;
+systemPy = 0;
+for (var p = 1; p < bodies.length; p++) {
+systemPx += bodies[p].mass * bodies[p].vx;
+systemPy += bodies[p].mass * bodies[p].vy;
+}
+star.vx = -systemPx / star.mass;
+star.vy = -systemPy / star.mass;
 resetView();
 logEvent('🌞 SOLAR SYSTEM SPAWNED', null, null);
 }
 
-function spawnAsteroidBeltAt(radius, count, centralBody) {
+function spawnAsteroidBeltAt(radius, count, centralBody, stable) {
 for (var i = 0; i < count; i++) {
 var angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
-var r = radius + (Math.random() - 0.5) * 30;
-var speed = Math.sqrt(G * centralBody.mass / r) * (0.95 + Math.random() * 0.1);
+var r = radius + (Math.random() - 0.5) * (stable ? 16 : 30);
+var speed = Math.sqrt(G * centralBody.mass / r) * (stable ? 1 : (0.95 + Math.random() * 0.1));
 var asteroid = new Body(centralBody.x + Math.cos(angle) * r, centralBody.y + Math.sin(angle) * r, -Math.sin(angle) * speed + centralBody.vx, Math.cos(angle) * speed + centralBody.vy, 'asteroid');
+if (stable) { asteroid.mass = 0.02; asteroid.radius = 1.2; }
 bodies.push(asteroid);
 }
 }
@@ -1224,17 +1321,20 @@ resetView();
 logEvent('🕳️ BLACK HOLE SYSTEM SPAWNED', null, null);
 }
 
+//  Fig-Eight 
 function spawnFigureEight() {
 clearAll();
-// these numbers are weird on purpose; the three stars only behave if nobody touches them
+
 var m = 120;
 var scale = 180;
 var vscale = 1.8;
+
 var pos = [
 { x: -0.97000436, y: 0.24308753 },
 { x: 0.97000436, y: -0.24308753 },
 { x: 0, y: 0 }
  ];
+
 var vel = [
 { vx: 0.93240737 / 2, vy: 0.86473146 / 2 },
 { vx: 0.93240737 / 2, vy: 0.86473146 / 2 },
@@ -1253,12 +1353,15 @@ resetView();
 logEvent('∞ FIGURE-8 ORBIT SPAWNED', null, null);
 }
 
+//  Rogue Flyby 
 function spawnRogueFlyby() {
+
 if (bodies.length === 0) spawnOrbit();
-// shove the intruder toward the middle-ish bit
+
 var cx = 0, cy = 0, tm = 0;
 for (var i = 0; i < bodies.length; i++) { cx += bodies[i].x * bodies[i].mass; cy += bodies[i].y * bodies[i].mass; tm += bodies[i].mass; }
 if (tm > 0) { cx /= tm; cy /= tm; }
+
 var rogue = new Body(cx - 800, cy + (Math.random() - 0.5) * 200, 3.5 + Math.random() * 1.5, (Math.random() - 0.5) * 0.8, 'star');
 rogue.starClass = 'O';
 rogue.mass = 180;
@@ -1270,6 +1373,7 @@ bodies.push(rogue);
 logEvent('☄️ ROGUE STAR FLYBY', null, null);
 }
 
+
 function spawnGalaxyCollision() {
 clearAll();
 var galaxies = [
@@ -1279,6 +1383,7 @@ var galaxies = [
 var starCls = [['G', 'K'], ['B', 'M']];
 for (var g = 0; g < 2; g++) {
 var gx = galaxies[g];
+
 for (var s = 0; s < gx.starCount; s++) {
 var offset = (s - 0.5) * 40;
 var st = new Body(gx.cx + offset, gx.cy + offset * 0.3, gx.vx, gx.vy, 'star');
@@ -1287,6 +1392,7 @@ st.mass = gx.starMass; st.radius = 18; st.isHeavy = false;
 st.color = starClassColors[st.starClass]; st.glow = starClassGlows[st.starClass];
 bodies.push(st);
 }
+
 for (var p = 0; p < gx.planetCount; p++) {
 var orbitR = 80 + p * 35;
 var ang = (p / gx.planetCount) * Math.PI * 2 + Math.random() * 0.4;
@@ -1301,6 +1407,7 @@ gx.vy + Math.cos(ang) * spd,
 planet.mass = 5 + Math.random() * 8; planet.radius = 4 + Math.random() * 4;
 bodies.push(planet);
 }
+// A few comets
 for (var c = 0; c < 3; c++) {
 var cr = 300 + Math.random() * 100, ca = Math.random() * Math.PI * 2;
 var comet = new Body(gx.cx + Math.cos(ca) * cr, gx.cy + Math.sin(ca) * cr, gx.vx + (Math.random() - 0.5) * 2, gx.vy + (Math.random() - 0.5) * 2, 'comet');
@@ -1311,12 +1418,15 @@ resetView();
 logEvent('🌌 GALAXY COLLISION INCOMING', null, null);
 }
 
+
 function spawnPulsar() {
 clearAll();
+// pulras star
 var pulsar = new Body(0, 0, 0, 0, 'pulsar');
 pulsar.mass = 200; pulsar.radius = 7;
 pulsar.pulsarAngle = 0; pulsar.pulsarPhase = 0;
 bodies.push(pulsar);
+
 var orbits = [90, 160, 240, 340];
 var cols = ['#aaddff', '#ffcc88', '#88ffcc', '#ff88cc'];
 for (var i = 0; i < orbits.length; i++) {
@@ -1326,6 +1436,7 @@ var planet = new Body(Math.cos(angle) * r, Math.sin(angle) * r, -Math.sin(angle)
 planet.color = cols[i]; planet.radius = 4 + i * 1.5; planet.mass = 3 + i * 2;
 bodies.push(planet);
 }
+// Debris field close in
 for (var j = 0; j < 15; j++) {
 var dr = 45 + Math.random() * 25, da = Math.random() * Math.PI * 2;
 var dspeed = Math.sqrt(G * pulsar.mass / dr) * (0.9 + Math.random() * 0.2);
@@ -1336,6 +1447,7 @@ bodies.push(debris);
 resetView();
 logEvent('💫 PULSAR SYSTEM SPAWNED', 'pulsar', {});
 }
+
 
 function updateStats() {
 document.getElementById('s-bodies').textContent = bodies.length;
@@ -1350,7 +1462,14 @@ function loop(ts) {
 if (!last) last = ts;
 var dt = Math.min((ts - last) / 16.67, 3);
 last = ts; frameCount++;
-step(dt); draw();
+
+// into close orbits and can make bodies fall into their primary unexpectedly.
+var totalDt = dt * timeWarp;
+var substeps = Math.max(1, Math.ceil(totalDt));
+var subDt = totalDt / substeps;
+for (var i = 0; i < substeps; i++) step(subDt);
+draw();
+if (frameCount % 2 === 0) drawStars(ts);
 if (frameCount % 10 === 0) updateStats();
 requestAnimationFrame(loop);
 }
@@ -1364,6 +1483,7 @@ function startSim() {
     requestAnimationFrame(loop);
 }
 
+//  jk 
 var encyclopediaEntries = [
 { id: 'supernova', icon: '💥', title: 'Supernova', sub: 'Stellar explosion', color: '#ff6633',
 fact: 'A supernova can briefly outshine an entire galaxy of 200 billion stars.',
@@ -1457,3 +1577,6 @@ simBtn.onclick = function() {
     }
 };
 }
+
+
+
