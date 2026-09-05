@@ -1,4 +1,4 @@
-/* ─── Variables ─────────────────────────────────────────────────── */
+/*some Variables*/
 :root {
 --void: #02020a;
 --panel: rgba(255,255,255,0.04);
@@ -13,7 +13,7 @@
 --panel-collapsed: 0px;
 }
 
-/* ─── Reset & Base ──────────────────────────────────────────────── */
+
 • { margin:0; padding:0; box-sizing:border-box; }
 body {
 background: var(--void);
@@ -26,11 +26,11 @@ cursor: crosshair;
 user-select: none;
 }
 
-/* ─── Canvases ──────────────────────────────────────────────────── */
+
 #stars { position:fixed; inset:0; pointer-events:none; z-index:0; }
 canvas#sim { position:fixed; inset:0; z-index:1; }
 
-/* ─── Flash Overlay ─────────────────────────────────────────────── */
+
 #flash {
 position:fixed; inset:0;
 background:white; opacity:0;
@@ -38,7 +38,7 @@ pointer-events:none; z-index:50;
 transition: opacity .05s;
 }
 
-/* ─── Intro ─────────────────────────────────────────────────────── */
+
 #intro {
 position:fixed; inset:0; z-index:100;
 display:flex; flex-direction:column;
@@ -81,7 +81,7 @@ transition:transform .3s; z-index:-1;
 .intro-btn:hover::before { transform:translateX(0); }
 .intro-btn:hover { color:var(--void); }
 
-/* ─── Top Bar ───────────────────────────────────────────────────── */
+
 #topbar {
 position:fixed; top:0; left:0; right:0;
 padding:16px 24px; display:flex;
@@ -142,6 +142,7 @@ background: rgba(200,255,0,0.06);
 #panel-inner {
 width: var(--panel-width);
 height: 100%;
+box-sizing: border-box;
 overflow-y: auto;
 overflow-x: hidden;
 background: rgba(8,8,18,0.92);
@@ -158,12 +159,12 @@ scrollbar-color: var(--border) transparent;
 #panel-inner::-webkit-scrollbar-track { background: transparent; }
 #panel-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-/* ─── Panel Sections ────────────────────────────────────────────── */
+
 .panel-section {
 background: var(--panel);
 border: 1px solid var(--border);
 border-radius: 10px;
-padding: 60px;  /* changed */
+padding: 10px;  /* check*/
 flex-shrink: 0;
 }
 .panel-label {
@@ -172,7 +173,6 @@ letter-spacing:3px; text-transform:uppercase;
 color:var(--muted); margin-bottom:10px;
 }
 
-/* ─── Sliders ───────────────────────────────────────────────────── */
 .slider-group { margin-bottom:8px; }
 .slider-group:last-child { margin-bottom:0; }
 .slider-row {
@@ -195,7 +195,6 @@ transition:transform .15s;
 }
 input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.3); }
 
-/* ─── Buttons ───────────────────────────────────────────────────── */
 .btn-group { display:flex; flex-direction:column; gap:5px; }
 .btn {
 font-family:'Syne',sans-serif; font-size:10px;
@@ -223,7 +222,6 @@ background:rgba(0,200,255,0.12);
 border-color:var(--accent3); color:var(--accent3);
 }
 
-/* ─── Type Buttons ──────────────────────────────────────────────── */
 .type-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
 .type-btn {
 font-family:'Space Mono',monospace; font-size:9px; letter-spacing:1px;
@@ -240,7 +238,6 @@ border-color:var(--accent); color:var(--accent);
 background:rgba(200,255,0,0.06);
 }
 
-/* ─── Zoom Controls (floating) ──────────────────────────────────── */
 #zoom-controls {
 position:fixed; left:20px; top:50%; transform:translateY(-50%);
 z-index:20; display:flex; flex-direction:column; gap:6px;
@@ -259,7 +256,6 @@ background:rgba(200,255,0,0.1);
 border-color:var(--accent); color:var(--accent);
 }
 
-/* ─── Event Log ─────────────────────────────────────────────────── */
 #eventlog {
 position:fixed; left:20px; bottom:80px;
 font-family:'Space Mono',monospace; font-size:9px;
@@ -276,7 +272,6 @@ border-radius:3px;
 .event-item:hover { background:rgba(255,107,53,0.1); }
 .event-item.fade { opacity:0; }
 
-/* ─── Event Detail Panel ────────────────────────────────────────── */
 #event-detail {
 position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
 background:rgba(8,8,20,0.97); border:1px solid var(--border);
@@ -308,7 +303,6 @@ line-height:1.9; color:var(--muted); letter-spacing:0.5px;
 }
 #event-detail-body strong { color:var(--text); }
 
-/* ─── Hints ─────────────────────────────────────────────────────── */
 #hint {
 position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
 font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px;
@@ -328,7 +322,6 @@ opacity:0; transition:opacity .4s;
 }
 #orbit-hint.visible { opacity:0.8; }
 
-/* ─── Inspector Panel ───────────────────────────────────────────── */
 #inspector {
 position: fixed;
 left: 66px; top: 50%;
@@ -398,7 +391,6 @@ border-color: var(--accent3); color: var(--accent3);
 background: rgba(0,200,255,0.08);
 }
 
-/* ─── Gravity Well Hint ─────────────────────────────────────────── */
 #gravity-hint {
 position: fixed; bottom: 48px; left: 50%; transform: translateX(-50%);
 font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px;
@@ -408,13 +400,12 @@ opacity: 0; transition: opacity .4s;
 }
 #gravity-hint.visible { opacity: 0.8; }
 
-/* ─── Follow mode indicator ─────────────────────────────────────── */
 #follow-btn.active {
 background: rgba(0,200,255,0.12);
 border-color: var(--accent3); color: var(--accent3);
 }
 
-/* ─── Encyclopedia Open Button ──────────────────────────────────── */
+/* encyclopedia*/
 .enc-open-btn {
 pointer-events: all;
 font-family: 'Space Mono', monospace;
@@ -430,7 +421,6 @@ border-color: var(--accent);
 box-shadow: 0 0 12px rgba(200,255,0,0.2);
 }
 
-/* ─── Encyclopedia Overlay ──────────────────────────────────────── */
 #encyclopedia {
 position: fixed; inset: 0; z-index: 80;
 background: rgba(2,2,10,0.96);
@@ -469,7 +459,6 @@ width: 36px; height: 36px; border-radius: 8px; transition: all .2s;
 display: flex; flex: 1; overflow: hidden; gap: 0;
 }
 
-/* ─── Encyclopedia List ─────────────────────────────────────────── */
 #enc-list {
 width: 300px; flex-shrink: 0;
 overflow-y: auto; padding: 16px;
@@ -500,7 +489,7 @@ color: var(--muted); margin-top: 2px;
 }
 .enc-item-play { font-size: 11px; color: var(--accent); opacity: 0.6; flex-shrink: 0; }
 
-/* ─── Encyclopedia Detail ───────────────────────────────────────── */
+
 #enc-detail {
 flex: 1; padding: 40px 50px;
 overflow-y: auto;
@@ -547,7 +536,7 @@ background: var(--panel); border: 1px solid var(--border); color: var(--muted);
 }
 #enc-link-btn:hover { border-color: var(--accent3); color: var(--accent3); }
 
-/* ─── Empty detail state ────────────────────────────────────────── */
+/*  Empty dtl state  */
 #enc-detail-empty {
 flex: 1; display: flex; align-items: center; justify-content: center;
 color: var(--muted); font-family: 'Space Mono', monospace;
