@@ -92,23 +92,38 @@
         <div class="panel-section">
           <div class="panel-label">Physics</div>
           <div class="slider-group">
-            <div class="slider-row"><span class="slider-name">Gravity</span><span class="slider-val" id="v-gravity">1.0</span></div>
+            <div class="slider-row">
+              <span class="slider-name">Gravity</span>
+              <span class="slider-val" id="v-gravity">1.0</span>
+            </div>
             <input type="range" min="0" max="30" value="10" step="1" oninput="updateSlider('gravity',this.value)">
           </div>
           <div class="slider-group">
-            <div class="slider-row"><span class="slider-name">Damping</span><span class="slider-val" id="v-damping">1.000</span></div>
+            <div class="slider-row">
+              <span class="slider-name">Damping</span>
+              <span class="slider-val" id="v-damping">1.000</span>
+            </div>
             <input type="range" min="980" max="1000" value="1000" step="1" oninput="updateSlider('damping',this.value)">
           </div>
           <div class="slider-group">
-            <div class="slider-row"><span class="slider-name">Trail Length</span><span class="slider-val" id="v-trail">80</span></div>
+            <div class="slider-row">
+              <span class="slider-name">Trail Length</span>
+              <span class="slider-val" id="v-trail">80</span>
+            </div>
             <input type="range" min="0" max="300" value="80" step="10" oninput="updateSlider('trail',this.value)">
           </div>
           <div class="slider-group">
-            <div class="slider-row"><span class="slider-name">Time Warp</span><span class="slider-val" id="v-timewarp">1.0x</span></div>
+            <div class="slider-row">
+              <span class="slider-name">Time Warp</span>
+              <span class="slider-val" id="v-timewarp">1.0x</span>
+            </div>
             <input type="range" min="1" max="50" value="10" step="1" oninput="updateSlider('timewarp',this.value)">
           </div>
           <div class="slider-group">
-            <div class="slider-row"><span class="slider-name">Well Strength</span><span class="slider-val" id="v-wellstrength">500</span></div>
+            <div class="slider-row">
+              <span class="slider-name">Well Strength</span>
+              <span class="slider-val" id="v-wellstrength">500</span>
+            </div>
             <input type="range" min="50" max="2000" value="500" step="50" oninput="updateSlider('wellstrength',this.value)">
             <div class="slider-hint">Gravity well pull force</div>
           </div>
@@ -117,7 +132,10 @@
         <div class="panel-section">
           <div class="panel-label">View</div>
           <div class="slider-group">
-            <div class="slider-row"><span class="slider-name">Zoom</span><span class="slider-val" id="v-zoom">100%</span></div>
+            <div class="slider-row">
+              <span class="slider-name">Zoom</span>
+              <span class="slider-val" id="v-zoom">100%</span>
+            </div>
             <input type="range" min="20" max="400" value="100" step="5" oninput="updateSlider('zoom',this.value)">
           </div>
           <div class="btn-group" style="margin-top:8px">
