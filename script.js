@@ -105,9 +105,9 @@ var camera = { x: 0, y: 0, zoom: 1.0, minZoom: 0.1, maxZoom: 5.0 };
 var followTarget = null;
 var isFollowing = false;
 
-function screenToWorld(sx, sy) {
+function screenToWorld(screen_x, sy) {
 return {
-x: (sx - canvas.width / 2 - camera.x) / camera.zoom,
+x: (screen_x - canvas.width / 2 - camera.x) / camera.zoom,
 y: (sy - canvas.height / 2 - camera.y) / camera.zoom
 };
 }
@@ -171,11 +171,11 @@ camera.y = -followTarget.y * camera.zoom;
 canvas.addEventListener('wheel', function(e) {
 e.preventDefault();
 var factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
-var wx = (e.clientX - canvas.width / 2 - camera.x) / camera.zoom;
-var wy = (e.clientY - canvas.height / 2 - camera.y) / camera.zoom;
+var worldX = (e.clientX - canvas.width / 2 - camera.x) / camera.zoom;
+var worldY = (e.clientY - canvas.height / 2 - camera.y) / camera.zoom;
 camera.zoom = Math.max(camera.minZoom, Math.min(camera.maxZoom, camera.zoom * factor));
-camera.x = e.clientX - canvas.width / 2 - wx * camera.zoom;
-camera.y = e.clientY - canvas.height / 2 - wy * camera.zoom;
+camera.x = e.clientX - canvas.width / 2 - worldX * camera.zoom;
+camera.y = e.clientY - canvas.height / 2 - worldY * camera.zoom;
 updateZoomUI();
 }, { passive: false });
 
@@ -254,8 +254,8 @@ var period = '—';
 var nearestMass = 0, nearestDist = Infinity;
 for (var i = 0; i < bodies.length; i++) {
 if (bodies[i] === b) continue;
-var dx = bodies[i].x - b.x, dy = bodies[i].y - b.y;
-var d = Math.sqrt(dx * dx + dy * dy);
+var deltaX = bodies[i].x - b.x, deltaY = bodies[i].y - b.y;
+var d = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 if (d < nearestDist && bodies[i].mass > b.mass) { nearestDist = d; nearestMass = bodies[i].mass; }
 }
 if (nearestMass > 0 && nearestDist < 1000) {
@@ -286,14 +286,14 @@ selectedBody.gravityMult = mult;
 document.getElementById('v-bodygravity').textContent = mult.toFixed(1) + 'x';
 }
 
-function bodyAtScreen(sx, sy) {
-var world = screenToWorld(sx, sy);
+function bodyAtScreen(screen_x, sy) {
+var world = screenToWorld(screen_x, sy);
 var best = null, bestDist = Infinity;
 for (var i = 0; i < bodies.length; i++) {
-var dx = bodies[i].x - world.x, dy = bodies[i].y - world.y;
-var dist = Math.sqrt(dx * dx + dy * dy);
+var deltaX = bodies[i].x - world.x, deltaY = bodies[i].y - world.y;
+var distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 var hitRadius = Math.max(bodies[i].radius, 10 / camera.zoom);
-if (dist < hitRadius && dist < bestDist) { best = bodies[i]; bestDist = dist; }
+if (distance < hitRadius && distance < bestDist) { best = bodies[i]; bestDist = distance; }
 }
 return best;
 }
@@ -444,7 +444,7 @@ body = '<strong>Tidal Disruption Event (TDE)</strong><br>A star was torn apart b
 + 'New black hole mass: <strong>' + (data.mass ? Math.round(data.mass) : '?') + ' units</strong>';
 } else if (type === 'roche') {
 icon = '💫'; title = 'ROCHE LIMIT EXCEEDED';
-body = '<strong>Roche Limit Tidal Disruption</strong><br>Within the Roche limit, tidal forces exceed the bodys self-gravity, tearing it apart into debris.<br><br>This is how the rings of Saturn actually formed.';
+body = '<strong>Roche Limit Tidal Disruption</strong><br>Within the Roche limit, tidal forces exceed the body\'s self-gravity, tearing it apart into debris.<br><br>This is how the rings of Saturn actually formed.';
 } else if (type === 'merge') {
 icon = '🔵'; title = 'PLANETARY MERGER';
 body = '<strong>Accretionary Collision</strong><br>Two bodies merged. This is how planets form through accretion over millions of years.<br><br>'
@@ -452,7 +452,7 @@ body = '<strong>Accretionary Collision</strong><br>Two bodies merged. This is ho
 } else if (type === 'orbit') {
 icon = '🪐'; title = 'ORBIT ESTABLISHED';
 body = '<strong>Stable Keplerian Orbit</strong><br>'
-+ 'Radius: <strong>' + (data.dist ? Math.round(data.dist) : '?') + ' units</strong><br>'
++ 'Radius: <strong>' + (data.distance ? Math.round(data.distance) : '?') + ' units</strong><br>'
 + 'Velocity: <strong>' + (data.speed ? data.speed.toFixed(2) : '?') + ' u/s</strong><br><br>'
 + 'Third Law of Kepler: T² ∝ a³';
 } else if (type === 'neutron') {
@@ -541,18 +541,18 @@ logEvent('🌑 NEUTRON STAR FORMED', 'neutron', {});
 // roche limit omd dont touch anything under pls
 function checkRocheLimit(i, j) {
 var a = bodies[i], b = bodies[j];
-if (a.dead || b.dead) return false;
+if (a.dead || b.dead || a.type === 'asteroid' || b.type === 'asteroid') return false;
 var bigger, smaller;
 if (a.mass > b.mass * 5) { bigger = a; smaller = b; }
 else if (b.mass > a.mass * 5) { bigger = b; smaller = a; }
 else return false;
-var dx = smaller.x - bigger.x, dy = smaller.y - bigger.y;
-var dist = Math.sqrt(dx * dx + dy * dy);
+var deltaX = smaller.x - bigger.x, deltaY = smaller.y - bigger.y;
+var distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
 var biggerDensity = bigger.rocheDensity || (bigger.mass / Math.pow(bigger.radius, 3));
 var smallerDensity = smaller.rocheDensity || (smaller.mass / Math.pow(smaller.radius, 3));
 var rocheLimit = bigger.radius * 2.44 * Math.cbrt(biggerDensity / smallerDensity);
-if (dist < rocheLimit && dist > bigger.radius + smaller.radius) {
+if (distance < rocheLimit && distance > bigger.radius + smaller.radius) {
 return { bigger: bigger, smaller: smaller };
 }
 return false;
@@ -575,7 +575,7 @@ smaller.x + (Math.random() - 0.5) * smaller.radius * 3,
 smaller.y + (Math.random() - 0.5) * smaller.radius * 3,
 smaller.vx + Math.cos(angle) * speed, smaller.vy + Math.sin(angle) * speed, 'asteroid'
 );
-
+bodies.push(debris);
 }
 for (var j = 0; j < 20; j++) {
 var pa = Math.random() * Math.PI * 2, ps = 1 + Math.random() * 3;
@@ -641,27 +641,27 @@ var world = screenToWorld(screenX, screenY);
 var x = world.x, y = world.y;
 var nearest = null, nearestDist = Infinity;
 for (var i = 0; i < bodies.length; i++) {
-var dx = bodies[i].x - x, dy = bodies[i].y - y;
-var dist = Math.sqrt(dx * dx + dy * dy);
-if (dist < nearestDist && bodies[i].mass > 20) { nearest = bodies[i]; nearestDist = dist; }
+var deltaX = bodies[i].x - x, deltaY = bodies[i].y - y;
+var distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+if (distance < nearestDist && bodies[i].mass > 20) { nearest = bodies[i]; nearestDist = distance; }
 }
 if (!nearest || nearestDist < nearest.radius * 1.5) {
 bodies.push(new Body(x, y, (Math.random() - 0.5) * 0.5, (Math.random() - 0.5) * 0.5, type));
 return;
 }
-var ddx = x - nearest.x, ddy = y - nearest.y;
-var d = Math.sqrt(ddx * ddx + ddy * ddy);
+var dx = x - nearest.x, dy = y - nearest.y;
+var d = Math.sqrt(dx * dx + dy * dy);
 var speed = Math.sqrt(G * nearest.mass / d);
-var vx = (-ddy / d) * speed + nearest.vx;
-var vy = (ddx / d) * speed + nearest.vy;
+var vx = (-dy / d) * speed + nearest.vx;
+var vy = (dx / d) * speed + nearest.vy;
 var nb = new Body(x, y, vx, vy, type);
 if (nb.type === 'planet' && shouldHaveRings(nb)) { nb.hasRings = true; nb.ringTilt = Math.random() * 0.5 + 0.1; nb.ringColor = nb.color; }
 bodies.push(nb);
-logEvent('🪐 ORBIT INSERTED', 'orbit', { dist: d, speed: speed });
+logEvent('🪐 ORBIT INSERTED', 'orbit', { distance: d, speed: speed });
 }
 
 function updateDayNight() {
-var i, j, b, star, dx, dy, dist, bestDist;
+var i, j, b, star, deltaX, deltaY, distance, bestDist;
 for (i = 0; i < bodies.length; i++) {
 b = bodies[i];
 if (b.type !== 'planet') continue;
@@ -669,8 +669,8 @@ bestDist = Infinity;
 for (j = 0; j < bodies.length; j++) {
 star = bodies[j];
 if (star.type !== 'star') continue;
-dx = star.x - b.x; dy = star.y - b.y; dist = Math.sqrt(dx * dx + dy * dy);
-if (dist < bestDist) { bestDist = dist; b.nearestStarAngle = Math.atan2(dy, dx); }
+deltaX = star.x - b.x; deltaY = star.y - b.y; distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+if (distance < bestDist) { bestDist = distance; b.nearestStarAngle = Math.atan2(deltaY, deltaX); }
 }
 }
 }
@@ -679,7 +679,7 @@ if (dist < bestDist) { bestDist = dist; b.nearestStarAngle = Math.atan2(dy, dx);
 function step(dt) {
 if (paused) return;
 simTime += dt * 0.016;
-var i, j, b, bb, a, dx, dy, dist2, minDist, dist, force, fx, fy;
+var i, j, b, bb, a, deltaX, deltaY, distSq, minDist, distance, force, forceX, forceY;
 
 for (i = 0; i < bodies.length; i++) {
 b = bodies[i];
@@ -693,40 +693,40 @@ b.pulsarPhase += dt * 0.05;
 }
 
 for (i = 0; i < bodies.length; i++) {
-fx = 0; fy = 0;
+forceX = 0; forceY = 0;
 a = bodies[i];
 if (a.dead) continue;
 
 for (j = 0; j < bodies.length; j++) {
 if (i === j) continue;
 bb = bodies[j]; if (bb.dead) continue;
-dx = bb.x - a.x; dy = bb.y - a.y; dist2 = dx * dx + dy * dy;
+deltaX = bb.x - a.x; deltaY = bb.y - a.y; distSq = deltaX * deltaX + deltaY * deltaY;
 
 
 minDist = (a.radius + bb.radius) * 0.85;
-if (dist2 < minDist * minDist) {
+if (distSq < minDist * minDist) {
 if (!a.dead && !bb.dead) { handleCollision(i, j); return; }
 continue;
 }
 var rocheResult = checkRocheLimit(i, j);
 if (rocheResult) { triggerRocheTeardown(rocheResult.smaller, rocheResult.bigger); return; }
 var softening = 100;
-dist = Math.sqrt(dist2 + softening);
-force = G * a.mass * bb.mass / (dist2 + softening);
+distance = Math.sqrt(distSq + softening);
+force = G * a.mass * bb.mass / (distSq + softening);
 force *= bb.gravityMult;
-fx += force * dx / dist; fy += force * dy / dist;
+forceX += force * deltaX / distance; forceY += force * deltaY / distance;
 }
 
 for (j = 0; j < gravityWells.length; j++) {
 var well = gravityWells[j];
-dx = well.x - a.x; dy = well.y - a.y; dist2 = dx * dx + dy * dy;
-var softDist = Math.sqrt(dist2 + 100);
-var wforce = well.strength * a.mass / (dist2 + 100);
-fx += wforce * dx / softDist; fy += wforce * dy / softDist;
+deltaX = well.x - a.x; deltaY = well.y - a.y; distSq = deltaX * deltaX + deltaY * deltaY;
+var softDist = Math.sqrt(distSq + 100);
+var wforce = well.strength * a.mass / (distSq + 100);
+forceX += wforce * deltaX / softDist; forceY += wforce * deltaY / softDist;
 }
 
 // stars movement and blavk hole too
-a.vx += (fx / a.mass) * dt; a.vy += (fy / a.mass) * dt;
+a.vx += (forceX / a.mass) * dt; a.vy += (forceY / a.mass) * dt;
 a.vx *= damping; a.vy *= damping;
 }
 
@@ -1020,14 +1020,14 @@ drawGravityWells();
 
 // Drag arrow
 if (isDragging && spawnMode === 'launch' && !isPanning) {
-var ws = screenToWorld(dragStart.sx, dragStart.sy);
+var ws = screenToWorld(dragStart.screen_x, dragStart.sy);
 var we = screenToWorld(mouseScreen.x, mouseScreen.y);
-var adx = we.x - ws.x, ady = we.y - ws.y, alen = Math.sqrt(adx * adx + ady * ady);
+var arrowDX = we.x - ws.x, arrowDY = we.y - ws.y, alen = Math.sqrt(arrowDX * arrowDX + arrowDY * arrowDY);
 if (alen > 3) {
 ctx.beginPath(); ctx.moveTo(ws.x, ws.y); ctx.lineTo(we.x, we.y);
 ctx.strokeStyle = 'rgba(200,255,0,0.6)'; ctx.lineWidth = 1.5 / camera.zoom;
 ctx.setLineDash([4 / camera.zoom, 4 / camera.zoom]); ctx.stroke(); ctx.setLineDash([]);
-var ang = Math.atan2(ady, adx), hw = 10 / camera.zoom;
+var ang = Math.atan2(arrowDY, arrowDX), hw = 10 / camera.zoom;
 ctx.beginPath(); ctx.moveTo(we.x, we.y);
 ctx.lineTo(we.x - hw * Math.cos(ang - 0.4), we.y - hw * Math.sin(ang - 0.4));
 ctx.lineTo(we.x - hw * Math.cos(ang + 0.4), we.y - hw * Math.sin(ang + 0.4));
@@ -1040,13 +1040,13 @@ ctx.strokeStyle = 'rgba(200,255,0,0.4)'; ctx.lineWidth = 1 / camera.zoom; ctx.st
 
 if (spawnMode === 'orbit') {
 var wm = screenToWorld(mouseScreen.x, mouseScreen.y);
-var near2 = null, nDist2 = Infinity;
+var near2 = null, nearestDist = Infinity;
 for (i = 0; i < bodies.length; i++) {
-var odx = bodies[i].x - wm.x, ody = bodies[i].y - wm.y, od = Math.sqrt(odx * odx + ody * ody);
-if (od < nDist2 && bodies[i].mass > 20) { near2 = bodies[i]; nDist2 = od; }
+var hoverDX = bodies[i].x - wm.x, hoverDY = bodies[i].y - wm.y, od = Math.sqrt(hoverDX * hoverDX + hoverDY * hoverDY);
+if (od < nearestDist && bodies[i].mass > 20) { near2 = bodies[i]; nearestDist = od; }
 }
-if (near2 && nDist2 < 600) {
-ctx.beginPath(); ctx.arc(near2.x, near2.y, nDist2, 0, Math.PI * 2);
+if (near2 && nearestDist < 600) {
+ctx.beginPath(); ctx.arc(near2.x, near2.y, nearestDist, 0, Math.PI * 2);
 ctx.strokeStyle = 'rgba(0,200,255,0.12)'; ctx.lineWidth = 1 / camera.zoom;
 ctx.setLineDash([3 / camera.zoom, 5 / camera.zoom]); ctx.stroke(); ctx.setLineDash([]);
 ctx.beginPath(); ctx.arc(near2.x, near2.y, near2.radius * 2.5, 0, Math.PI * 2);
@@ -1060,7 +1060,7 @@ ctx.restore();
 
 var isDragging = false;
 var isWellDragging = false;
-var dragStart = { sx: 0, sy: 0 };
+var dragStart = { screen_x: 0, sy: 0 };
 var mouseScreen = { x: 0, y: 0 };
 
 canvas.addEventListener('mousedown', function(e) {
@@ -1077,7 +1077,7 @@ if (selectedBody) { deselectBody(); return; }
 if (spawnMode === 'orbit') {
 spawnInOrbit(e.clientX, e.clientY, spawnType);
 } else {
-dragStart = { sx: e.clientX, sy: e.clientY };
+dragStart = { screen_x: e.clientX, sy: e.clientY };
 isDragging = true;
 }
 });
@@ -1106,10 +1106,10 @@ return;
 }
 if (!isDragging) return;
 isDragging = false;
-var world = screenToWorld(dragStart.sx, dragStart.sy);
-var dx = e.clientX - dragStart.sx, dy = e.clientY - dragStart.sy;
+var world = screenToWorld(dragStart.screen_x, dragStart.sy);
+var deltaX = e.clientX - dragStart.screen_x, deltaY = e.clientY - dragStart.sy;
 var velScale = 0.06 / camera.zoom;
-var nb = new Body(world.x, world.y, dx * velScale, dy * velScale, spawnType);
+var nb = new Body(world.x, world.y, deltaX * velScale, deltaY * velScale, spawnType);
 if (nb.type === 'planet' && shouldHaveRings(nb)) { nb.hasRings = true; nb.ringTilt = Math.random() * 0.5 + 0.1; nb.ringColor = nb.color; }
 if (nb.type === 'star') logEvent('⭐ STAR SPAWNED — CLASS ' + nb.starClass, 'starclass', { cls: nb.starClass });
 bodies.push(nb);
@@ -1119,7 +1119,7 @@ var touchDragStart = null;
 canvas.addEventListener('touchstart', function(e) {
 e.preventDefault();
 var t = e.touches[0];
-touchDragStart = { sx: t.clientX, sy: t.clientY };
+touchDragStart = { screen_x: t.clientX, sy: t.clientY };
 mouseScreen = { x: t.clientX, y: t.clientY };
 if (spawnMode === 'gravity') {
 var world = screenToWorld(t.clientX, t.clientY);
@@ -1146,9 +1146,9 @@ if (isWellDragging) { isWellDragging = false; if (gravityWells.length > 0) gravi
 var t = e.changedTouches[0];
 if (spawnMode === 'orbit') spawnInOrbit(t.clientX, t.clientY, spawnType);
 else if (touchDragStart) {
-var world = screenToWorld(touchDragStart.sx, touchDragStart.sy);
-var dx = t.clientX - touchDragStart.sx, dy = t.clientY - touchDragStart.sy;
-bodies.push(new Body(world.x, world.y, dx * 0.06 / camera.zoom, dy * 0.06 / camera.zoom, spawnType));
+var world = screenToWorld(touchDragStart.screen_x, touchDragStart.sy);
+var deltaX = t.clientX - touchDragStart.screen_x, deltaY = t.clientY - touchDragStart.sy;
+bodies.push(new Body(world.x, world.y, deltaX * 0.06 / camera.zoom, deltaY * 0.06 / camera.zoom, spawnType));
 }
 touchDragStart = null;
 }, { passive: false });
@@ -1212,9 +1212,9 @@ document.getElementById('panel-toggle-icon').textContent = panelCollapsed ? '▶
 
 function spawnChaos() {
 var types = ['planet', 'star', 'comet', 'planet', 'planet', 'comet', 'asteroid'];
-var ww = canvas.width / camera.zoom, wh = canvas.height / camera.zoom;
+var worldWidth = canvas.width / camera.zoom, wh = canvas.height / camera.zoom;
 for (var i = 0; i < 30; i++) {
-bodies.push(new Body((Math.random() - 0.5) * ww, (Math.random() - 0.5) * wh, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, types[Math.floor(Math.random() * types.length)]));
+bodies.push(new Body((Math.random() - 0.5) * worldWidth, (Math.random() - 0.5) * wh, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, types[Math.floor(Math.random() * types.length)]));
 }
 logEvent('💥 CHAOS MODE ACTIVATED', null, null);
 }
@@ -1515,7 +1515,7 @@ desc: 'Rogue stars and objects travel through space without being gravitationall
 simulate: 'spawnRogueFlyby', link: 'https://en.wikipedia.org/wiki/Rogue_planet' },
 { id: 'tidal', icon: '🌀', title: 'Tidal Disruption', sub: 'Roche limit event', color: '#ff4488',
 fact: 'Saturn rings are thought to be the remains of a moon torn apart by tidal forces.',
-desc: 'When an object passes too close to a massive body, tidal forces (the difference in gravity across the object diameter) can exceed the object own self-gravity. The object is then torn apart — this is the Roche limit. For black holes, the tidal disruption of a star creates a brilliant flare visible across billions of light-years.',
+desc: 'When an object passes too close to a massive body, tidal forces (the difference in gravity across the object diameter) can exceed the object\'s own self-gravity. The object is then torn apart — this is the Roche limit. For black holes, the tidal disruption of a star creates a brilliant flare visible across billions of light-years.',
 simulate: 'spawnBlackHoleSystem', link: 'https://en.wikipedia.org/wiki/Tidal_disruption_event' }
 ];
 
@@ -1577,6 +1577,3 @@ simBtn.onclick = function() {
     }
 };
 }
-
-
-
