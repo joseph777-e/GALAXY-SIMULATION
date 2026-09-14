@@ -1,69 +1,44 @@
 # GRAVITY — N-Body Physics Playground
 
-An interactive space simulation where you can create planets, stars, comets, asteroids and black holes and watch them interact through gravity.
+An interactive space simulation for spawning planets, stars, comets, asteroids and black holes and watching gravity pull them around.
 
-![GRAVITY screenshot](YOUR_SCREENSHOT_HERE)
 
-## 🚀 Try it
+
+## Try it
 
 **[Play GRAVITY](https://joseph777-e.github.io/GALAXY-SIMULATION/)**
 
-## Quick start
-
-There's nothing to install.
-
-Just open the link above and start creating objects.
+Nothing to install — just open the link and start spawning objects.
 
 ## Features
 
-- 🌍 Spawn planets, stars, comets, asteroids, pulsars and black holes
-- 🪐 Give objects different masses, sizes and starting velocities
-- 🌀 Watch objects orbit, collide and get thrown around by gravity
-- 💥 Collisions can merge objects or create debris
-- ⭐ Different star classes have different properties
-- 🔭 Select objects and inspect their information
-- ⏩ Change the simulation speed
-- 🌌 Pan and zoom around the simulation
+- Spawn planets, stars, comets, asteroids, pulsars and black holes
+- Set mass, size and starting velocity for each object
+- Objects orbit, collide and get thrown around by gravity in real time
+- Collisions merge objects or break them into debris
+- Different star classes have different properties
+- Click an object to inspect its stats
+- Adjustable simulation speed
+- Pan and zoom around the simulation
 
 ## How it works
 
-GRAVITY is made with **HTML, CSS and JavaScript** and runs directly in the browser.
+GRAVITY runs entirely in the browser, built with HTML, CSS and JavaScript, rendered on a canvas.
 
-The simulation keeps track of each object's position, velocity, mass and other properties. Every update, the program calculates how the objects affect each other and changes their movement based on those calculations.
+Every object tracks its own position, velocity, mass and a few other properties. Each frame, the simulation calculates how every object pulls on every other object and updates their movement accordingly — that's the core N-body loop everything else sits on top of.
 
-I also added different systems on top of the basic gravity simulation, such as collisions, different types of stars, black holes and object destruction.
-
-The difficult part wasn't just making the objects move. It was getting all of these systems to work together without constantly breaking each other.
-
-For example, at one point objects created as debris could trigger another breakup, which created even more debris. This could basically turn one event into a giant chain reaction. I had to find what was causing it and change the logic so the debris could scatter without starting the whole process again.
+On top of the base gravity model there's a collision system, star classification, black holes, and object destruction. Most of the work went into getting these systems to coexist without stepping on each other. The collision/debris system was the worst offender — debris created from a breakup could trigger another breakup, which created more debris, and one collision could snowball into most of the simulation exploding at once. Fixing it meant tracing through the breakup logic and making sure debris could scatter without re-triggering the same checks that spawned it.
 
 ## What I learned
 
-This project taught me a lot about how different parts of a program can interact with each other.
-
-I got more comfortable with:
-
 - Gravity and velocity calculations
-- Vectors and movement
+- Working with vectors and movement
 - Collision detection
-- Updating objects every frame
-- Random generation
-- JavaScript
-- Debugging problems that aren't immediately obvious
+- Updating a large number of objects every frame without it falling over
+- Random generation for star/object variety
+- Debugging chains of cause and effect that aren't obvious from the symptom
 
-A lot of the development was basically:
-
-**make something → test it → break something → figure out why → fix it → repeat**
-
-And there were definitely some moments where fixing one thing broke something completely unrelated.
-
-## AI usage
-
-I used AI as a development helper for parts of the JavaScript structure, physics calculations and some of the maths.
-
-It helped me understand and get unstuck on certain parts, but I still had to put the systems together, test them, find bugs and work out why things weren't behaving correctly.
-
-The project went through a lot of testing and debugging rather than being generated once and left alone.
+Most of the build was: make something, test it, break something else, figure out why, fix it, repeat. A few fixes for one system quietly broke a completely unrelated one, which is most of where the debugging time went.
 
 ## Built with
 
@@ -76,4 +51,4 @@ The project went through a lot of testing and debugging rather than being genera
 
 Built by Joseph.
 
-AI was used as a development helper for parts of the code and physics calculations.
+AI was used as a development helper for parts of the physics calculations and some of the math.
