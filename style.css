@@ -13,6 +13,7 @@
 --panel-collapsed: 0px;
 }
 
+
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
 background: var(--void);
@@ -104,7 +105,7 @@ line-height:1.9; letter-spacing:1px;
 }
 #stats span { color:var(--accent); }
 
-/* ─── Side Panel ────────────────────────────────────────────────── */
+/* side panel */
 #panel {
 position: fixed;
 right: 0; top: 0; bottom: 0;
@@ -535,7 +536,7 @@ background: var(--panel); border: 1px solid var(--border); color: var(--muted);
 }
 #enc-link-btn:hover { border-color: var(--accent3); color: var(--accent3); }
 
-/*  Empty dtl state  */
+
 #enc-detail-empty {
 flex: 1; display: flex; align-items: center; justify-content: center;
 color: var(--muted); font-family: 'Space Mono', monospace;
