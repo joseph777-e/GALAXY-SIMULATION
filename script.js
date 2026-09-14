@@ -1,5 +1,5 @@
 // GRAVITY project :)
-window.alert("This simulation is simple and doesn't show everything accurately it's made for teaching purposes in a playfull and interactive way without being too heavy to run or too complicated to understand. It's also still in development.");
+window.alert("Heads up — this isn't a perfectly accurate physics sim, just something fun to mess around with. Still adding stuff to it.");
 //  Background 
 
 var starCanvas = document.getElementById('stars');
@@ -266,11 +266,19 @@ var classStr = b.starClass ? ' (' + b.starClass + ')' : '';
 document.getElementById('inspector-icon').textContent = icons[b.type] || '●';
 document.getElementById('inspector-title').textContent = b.type.toUpperCase() + classStr;
 document.getElementById('inspector-body').innerHTML =
-'<div class="stat-row"><span>MASS</span><span class="stat-val">' + b.mass.toFixed(1) + '</span></div>' +
-'<div class="stat-row"><span>RADIUS</span><span class="stat-val">' + b.radius.toFixed(1) + '</span></div>' +
+'<div class="stat-row">
+    <span>MASS</span><span class="stat-val">' + b.mass.toFixed(1) + '</span>
+</div>' +
+'<div class="stat-row">
+    <span>RADIUS</span><span class="stat-val">' + b.radius.toFixed(1) + '</span>
+</div>' +
 '<div class="stat-row"><span>SPEED</span><span class="stat-val">' + spd.toFixed(2) + ' u/s</span></div>' +
-'<div class="stat-row"><span>POS X</span><span class="stat-val">' + b.x.toFixed(0) + '</span></div>' +
-'<div class="stat-row"><span>POS Y</span><span class="stat-val">' + b.y.toFixed(0) + '</span></div>' +
+'<div class="stat-row">
+    <span>POS X</span><span class="stat-val">' + b.x.toFixed(0) + '</span>
+</div>' +
+'<div class="stat-row">
+    <span>POS Y</span><span class="stat-val">' + b.y.toFixed(0) + '</span>
+    </div>' +
 '<div class="stat-row"><span>PERIOD</span><span class="stat-val">' + period + '</span></div>' +
 (b.hasRings ? '<div class="stat-row"><span>RINGS</span><span class="stat-val">YES</span></div>' : '') +
 (b.starClass ? '<div class="stat-row"><span>CLASS</span><span class="stat-val">' + b.starClass + '</span></div>' : '');
@@ -564,7 +572,7 @@ var nb = [];
 for (var k = 0; k < bodies.length; k++) { if (!bodies[k].dead) nb.push(bodies[k]); }
 bodies = nb;
 logEvent('💫 ROCHE LIMIT — TORN APART', 'roche', {});
-var count = Math.min(6, 3 + Math.floor(smaller.mass * 0.2));
+var count = Math.min(5, 3 + Math.floor(smaller.mass * 0.2));
 for (var i = 0; i < count; i++) {   
 var baseAngle = Math.atan2(smaller.y - bigger.y, smaller.x - bigger.x);
 var spread = (Math.random() - 0.5) * Math.PI * 0.6;
@@ -577,7 +585,7 @@ smaller.vx + Math.cos(angle) * speed, smaller.vy + Math.sin(angle) * speed, 'ast
 );
 bodies.push(debris);
 }
-for (var j = 0; j < 20; j++) {
+for (var j = 0; j < 67; j++) {
 var pa = Math.random() * Math.PI * 2, ps = 1 + Math.random() * 3;
 particles.push(new Particle(smaller.x, smaller.y, Math.cos(pa) * ps, Math.sin(pa) * ps, smaller.color, 25 + Math.random() * 25, 1 + Math.random() * 2));
 
@@ -1486,36 +1494,36 @@ function startSim() {
 //  jk 
 var encyclopediaEntries = [
 { id: 'supernova', icon: '💥', title: 'Supernova', sub: 'Stellar explosion', color: '#ff6633',
-fact: 'A supernova can briefly outshine an entire galaxy of 200 billion stars.',
-desc: 'A supernova occurs when a massive star exhausts its nuclear fuel and its core collapses. The resulting shockwave blasts the outer layers into space at up to 30,000 km/s. Type II supernovae (core-collapse) leave behind a neutron star or black hole remnant. They seed the universe with heavy elements like iron, gold, and uranium.',
+fact: 'A supernova can briefly outshine its entire host galaxy.',
+desc: 'Basically a star runs out of fuel, the core can\'t hold itself up anymore, and it collapses in on itself so fast that it rebounds and blows the rest of the star apart. What\'s left behind is either a neutron star or, if the original star was big enough, a black hole. Also most of the heavier elements around us (iron, gold, all of it) got made in these explosions, which is a fun thing to think about.',
 simulate: 'spawnBinaryStars', link: 'https://en.wikipedia.org/wiki/Supernova' },
 { id: 'blackhole', icon: '🕳️', title: 'Black Hole', sub: 'Spacetime singularity', color: '#9900ff',
-fact: 'The supermassive black hole at the center of M87 has a mass of 6.5 billion suns.',
-desc: 'A black hole is a region of spacetime where gravity is so strong that nothing — not even light — can escape past the event horizon. They form when massive stars collapse at the end of their life cycle. Supermassive black holes lurk at the centers of most large galaxies, including our own Milky Way (Sagittarius A*).',
+fact: 'The one at the center of M87 is about 6.5 billion times the mass of the Sun.',
+desc: 'A region where gravity got so strong that not even light can get back out past a certain point (the event horizon). They form from collapsed massive stars, and there are also supermassive ones sitting in the middle of pretty much every big galaxy, including ours — ours is called Sagittarius A*.',
 simulate: 'spawnBlackHoleSystem', link: 'https://en.wikipedia.org/wiki/Black_hole' },
 { id: 'binary', icon: '⭐', title: 'Binary Stars', sub: 'Gravitational dance', color: '#ffcc00',
-fact: 'More than half of all stars in the Milky Way are part of binary or multi-star systems.',
-desc: 'Binary star systems consist of two stars gravitationally bound and orbiting their common center of mass. They range from contact binaries (stars touching) to wide binaries separated by light-years. Binary systems are crucial for measuring stellar masses and can produce spectacular phenomena like X-ray binaries and Type Ia supernovae.',
+fact: 'Over half the stars in the Milky Way aren\'t alone — they\'re in pairs or small groups.',
+desc: 'Two stars locked in orbit around their shared center of mass. Sometimes they\'re basically touching, sometimes they\'re light-years apart and barely count as "together." These systems are actually how astronomers figure out how much stars weigh, since you can measure the orbit and work backward.',
 simulate: 'spawnBinaryStars', link: 'https://en.wikipedia.org/wiki/Binary_star' },
 { id: 'figureeight', icon: '∞', title: 'Figure-8 Orbit', sub: '3-body choreography', color: '#00ffcc',
-fact: 'Discovered in 1993, the figure-8 is one of only a handful of stable 3-body solutions.',
-desc: 'The figure-8 orbit is a remarkable solution to the three-body problem where three equal masses chase each other along a figure-8 shaped path. It was discovered numerically by Cris Moore in 1993 and proved to exist rigorously in 2000. Unlike most 3-body configurations, this orbit is periodic and stable — a rare mathematical jewel.',
+fact: 'Found in 1993 — it\'s one of the only stable solutions to the 3-body problem anyone knows of.',
+desc: 'Three equal-mass bodies chasing each other around a figure-8 shaped path forever, staying perfectly in sync. The three-body problem is notoriously chaotic (that\'s a whole other rabbit hole), so finding a configuration that\'s actually periodic and stable like this one is kind of a big deal mathematically. I added this preset mostly because it looks unreasonably clean when it\'s running.',
 simulate: 'spawnFigureEight', link: 'https://en.wikipedia.org/wiki/Three-body_problem' },
 { id: 'galaxy', icon: '🌌', title: 'Galaxy Collision', sub: 'Cosmic merger event', color: '#4466ff',
-fact: 'The Milky Way and Andromeda galaxies are on a collision course — expected in ~4.5 billion years.',
-desc: 'When two galaxies collide, their stars rarely actually hit each other due to the vast distances between them. Instead, gravitational forces reshape both galaxies dramatically, triggering waves of star formation and sending stars on wild new orbits. Over billions of years, the two galaxies merge into a single elliptical galaxy.',
+fact: 'The Milky Way and Andromeda are headed toward each other, ETA roughly 4.5 billion years.',
+desc: 'Individual stars almost never actually smash into each other in a galaxy collision — there\'s just too much empty space between them. What actually happens is the gravity of the two galaxies drags everything into new shapes, kicks off a bunch of new star formation, and over a long time the two galaxies settle into one bigger blob.',
 simulate: 'spawnGalaxyCollision', link: 'https://en.wikipedia.org/wiki/Galaxy_merger' },
 { id: 'pulsar', icon: '💫', title: 'Pulsar', sub: 'Cosmic lighthouse', color: '#00ccff',
-fact: 'The fastest pulsar spins 716 times per second — faster than a kitchen blender.',
-desc: 'Pulsars are highly magnetized rotating neutron stars that emit beams of electromagnetic radiation. As the pulsar rotates, the beam sweeps across space like a lighthouse. They are among the most precise timekeepers in the universe, rivaling atomic clocks. Millisecond pulsars are thought to have been spun up by accreting mass from a companion star.',
+fact: 'The fastest known pulsar spins over 700 times a second.',
+desc: 'A spinning neutron star that fires beams of radiation out from its poles. If Earth happens to be in the path of that beam, we see it flick on and off like a lighthouse every time it spins around. Some of them are more precise than atomic clocks, which still feels unreal to me.',
 simulate: 'spawnPulsar', link: 'https://en.wikipedia.org/wiki/Pulsar' },
 { id: 'rogue', icon: '☄️', title: 'Rogue Flyby', sub: 'Intergalactic intruder', color: '#ff9944',
-fact: 'The first confirmed interstellar visitor to our solar system was Oumuamua in 2017.',
-desc: 'Rogue stars and objects travel through space without being gravitationally bound to any star system. When they pass through a solar system, their gravity can disrupt planetary orbits, fling planets into new paths, or even eject them entirely. Simulations suggest the early solar system may have had close stellar encounters that shaped the outer planets.',
+fact: 'The first confirmed interstellar visitor to our solar system, Oumuamua, showed up in 2017.',
+desc: 'Not every object out there is tied to a star system — some are just drifting through on their own. When one of these passes close enough to a solar system, its gravity can mess with existing orbits, or in extreme cases fling a planet out entirely. There\'s a theory the early solar system had a close call or two like this.',
 simulate: 'spawnRogueFlyby', link: 'https://en.wikipedia.org/wiki/Rogue_planet' },
 { id: 'tidal', icon: '🌀', title: 'Tidal Disruption', sub: 'Roche limit event', color: '#ff4488',
-fact: 'Saturn rings are thought to be the remains of a moon torn apart by tidal forces.',
-desc: 'When an object passes too close to a massive body, tidal forces (the difference in gravity across the object diameter) can exceed the object\'s own self-gravity. The object is then torn apart — this is the Roche limit. For black holes, the tidal disruption of a star creates a brilliant flare visible across billions of light-years.',
+fact: 'Saturn\'s rings might be what\'s left of a moon that got torn apart this way.',
+desc: 'If something gets too close to a much more massive object, the difference in gravity between its near side and far side can literally rip it apart — that distance is called the Roche limit. Black holes do this to stars sometimes, and the flare from it can be seen from ridiculously far away.',
 simulate: 'spawnBlackHoleSystem', link: 'https://en.wikipedia.org/wiki/Tidal_disruption_event' }
 ];
 
