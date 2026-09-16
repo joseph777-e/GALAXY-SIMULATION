@@ -266,19 +266,11 @@ var classStr = b.starClass ? ' (' + b.starClass + ')' : '';
 document.getElementById('inspector-icon').textContent = icons[b.type] || '●';
 document.getElementById('inspector-title').textContent = b.type.toUpperCase() + classStr;
 document.getElementById('inspector-body').innerHTML =
-'<div class="stat-row">
-    <span>MASS</span><span class="stat-val">' + b.mass.toFixed(1) + '</span>
-</div>' +
-'<div class="stat-row">
-    <span>RADIUS</span><span class="stat-val">' + b.radius.toFixed(1) + '</span>
-</div>' +
+'<div class="stat-row"><span>MASS</span><span class="stat-val">' + b.mass.toFixed(1) + '</span></div>' +
+'<div class="stat-row"><span>RADIUS</span><span class="stat-val">' + b.radius.toFixed(1) + '</span></div>' +
 '<div class="stat-row"><span>SPEED</span><span class="stat-val">' + spd.toFixed(2) + ' u/s</span></div>' +
-'<div class="stat-row">
-    <span>POS X</span><span class="stat-val">' + b.x.toFixed(0) + '</span>
-</div>' +
-'<div class="stat-row">
-    <span>POS Y</span><span class="stat-val">' + b.y.toFixed(0) + '</span>
-    </div>' +
+'<div class="stat-row"><span>POS X</span><span class="stat-val">' + b.x.toFixed(0) + '</span></div>' +
+'<div class="stat-row"><span>POS Y</span><span class="stat-val">' + b.y.toFixed(0) + '</span> </div>' +
 '<div class="stat-row"><span>PERIOD</span><span class="stat-val">' + period + '</span></div>' +
 (b.hasRings ? '<div class="stat-row"><span>RINGS</span><span class="stat-val">YES</span></div>' : '') +
 (b.starClass ? '<div class="stat-row"><span>CLASS</span><span class="stat-val">' + b.starClass + '</span></div>' : '');
